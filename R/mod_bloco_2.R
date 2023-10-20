@@ -877,7 +877,7 @@ mod_bloco_2_server <- function(id, filtros){
             type = "line",
             highcharter::hcaes(x = ano, y = tx_abortos_mil_mulheres_valor_medio, group = class, colour = class),
             tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_mil_mulheres_lim_inf:,f} - {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
+              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
             )
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
@@ -894,7 +894,7 @@ mod_bloco_2_server <- function(id, filtros){
               type = "line",
               highcharter::hcaes(x = ano, y = tx_abortos_mil_mulheres_valor_medio),
               tooltip = list(
-                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_mil_mulheres_lim_inf:,f} - {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
+                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
               ),
               dashStyle = "ShortDot",
               opacity = 0.8
@@ -907,7 +907,7 @@ mod_bloco_2_server <- function(id, filtros){
             type = "line",
             highcharter::hcaes(x = ano, y = tx_abortos_mil_mulheres_valor_medio, group = class, colour = class),
             tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_mil_mulheres_lim_inf:,f} - {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
+              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
             )
           ) |>
           highcharter::hc_add_series(
@@ -915,7 +915,7 @@ mod_bloco_2_server <- function(id, filtros){
             type = "line",
             highcharter::hcaes(x = ano, y = tx_abortos_mil_mulheres_valor_medio, group = class, colour = class),
             tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_mil_mulheres_lim_inf:,f} - {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
+              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
             )
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
@@ -932,7 +932,7 @@ mod_bloco_2_server <- function(id, filtros){
               type = "line",
               highcharter::hcaes(x = ano, y = tx_abortos_mil_mulheres_valor_medio),
               tooltip = list(
-                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_mil_mulheres_lim_inf:,f} - {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
+                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
               ),
               dashStyle = "ShortDot",
               opacity = 0.8
@@ -958,7 +958,7 @@ mod_bloco_2_server <- function(id, filtros){
             type = "line",
             highcharter::hcaes(x = ano, y = tx_abortos_cem_nascidos_vivos_valor_medio, group = class, colour = class),
             tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} - {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
+              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} e limite superior de {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
             )
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
@@ -975,7 +975,7 @@ mod_bloco_2_server <- function(id, filtros){
               type = "line",
               highcharter::hcaes(x = ano, y = tx_abortos_cem_nascidos_vivos_valor_medio),
               tooltip = list(
-                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} - {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
+                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} e limite superior de {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
               ),
               dashStyle = "ShortDot",
               opacity = 0.8
@@ -988,7 +988,7 @@ mod_bloco_2_server <- function(id, filtros){
             type = "line",
             highcharter::hcaes(x = ano, y = tx_abortos_cem_nascidos_vivos_valor_medio, group = class, colour = class),
             tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} - {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
+              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} e limite superior de {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
             )
           ) |>
           highcharter::hc_add_series(
@@ -996,7 +996,7 @@ mod_bloco_2_server <- function(id, filtros){
             type = "line",
             highcharter::hcaes(x = ano, y = tx_abortos_cem_nascidos_vivos_valor_medio, group = class, colour = class),
             tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} - {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
+              pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} e limite superior de {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
             )
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
@@ -1013,7 +1013,7 @@ mod_bloco_2_server <- function(id, filtros){
               type = "line",
               highcharter::hcaes(x = ano, y = tx_abortos_cem_nascidos_vivos_valor_medio),
               tooltip = list(
-                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} ({point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} - {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
+                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} e limite superior de {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
               ),
               dashStyle = "ShortDot",
               opacity = 0.8

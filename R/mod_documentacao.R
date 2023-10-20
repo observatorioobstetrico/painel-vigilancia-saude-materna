@@ -11,7 +11,12 @@
 mod_documentacao_ui <- function(id){
   ns <- NS(id)
   tagList(
-    HTML("<h2><b>Documentação dos indicadores</b></h2>"),
+    div(
+      HTML("<span style='display: block; margin-bottom: 15px;'> </span>"),
+      h2(tags$b("Documentação dos indicadores"), style = "padding-left: 0.4em"),
+      hr(style = "margin-bottom: 0px;"),
+      style = "position: fixed; top: 56px; width: 93.75%; background-color: white; z-index: 100;"
+    ),
     # fluidRow(
     #   column(
     #     width = 12,

@@ -10,6 +10,22 @@
 #'
 #' @import highcharter
 
+css_navbar <- "
+  .navbar {
+    position: fixed;
+    width: 100%;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    padding: .5rem .5rem;
+  }
+"
+
 app_ui <- function(request) {
   tagList(
     tags$style(HTML("
@@ -30,7 +46,7 @@ app_ui <- function(request) {
       dark = NULL,
       title = "Painel de Vigilância da Saúde Materna",
       bs4Dash::bs4DashNavbar(
-        fixed = TRUE,
+        #fixed = TRUE,
         title = bs4Dash::bs4DashBrand(
           title = HTML("<b> Painel de Vigilância da Saúde Materna </b>"),
           color = "primary",
@@ -40,7 +56,7 @@ app_ui <- function(request) {
         status = "primary"
       ),
       bs4Dash::bs4DashSidebar(
-        style = "z-index: 9999;",
+        #style = "z-index: 9999;",
         width = "470px",
         status = "navy",
         skin = "light",
@@ -110,9 +126,11 @@ app_ui <- function(request) {
         )
       ),
       bs4Dash::bs4DashBody(
+        tags$head(tags$style(HTML(css_navbar))),
+        div(style = "margin-top: 8em;"),
         conditionalPanel(
           condition = "input.abas != 'sobre' & input.abas != 'documentacao' & input.abas != 'aparecida'",
-          div(style = "margin-top: 71px;"),
+          div(style = "margin-top: 8em;"),
           bs4Dash::bs4Card(
             width = 12,
             title = HTML("<b style='font-size:22px'> Filtros </b>"),
@@ -569,10 +587,15 @@ app_ui <- function(request) {
           ),
           bs4Dash::bs4TabItem(
             tabName = "aparecida",
-            h2(tags$b("A história de Aparecida")),
+            div(
+              HTML("<span style='display: block; margin-bottom: 15px;'> </span>"),
+              h2(tags$b("A história de Aparecida"), style = "padding-left: 0.3em"),
+              hr(style = "margin-bottom: 0px;"),
+              style = "position: fixed; top: 56px; width: 93.75%; background-color: white; z-index: 100;"
+            ),
             HTML(
               "
-              <p align='justify'; style='font-size:18px'>
+              <p align='justify'; style='font-size:18px; padding: 0 0.5em'>
               Para melhor entender os resultados dos indicadores apresentados neste painel em diferentes contextos e em como eles
               refletem as situações de vulnerabilidade da mulher ao óbito materno, acesse, clicando na imagem abaixo ou
               <a href = 'https://observatorioobstetricobr.org/a-historia-de-aparecida/' target = _blank>neste link</a>, a história de Aparecida,
