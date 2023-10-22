@@ -12,10 +12,10 @@ mod_bloco_1_ui <- function(id){
   tagList(
     shinyalert::useShinyalert(force = TRUE),  # Set up shinyalert
     div(
+      class = "div-titulo",
       HTML("<span style='display: block; margin-bottom: 15px;'> </span>"),
       h2(tags$b(HTML("Condições socioeconômicas e de acesso ao serviço de saúde: série histórica"), htmlOutput(ns("titulo_localidade"), inline = TRUE)), style = "padding-left: 0.4em"),
-      hr(style = "margin-bottom: 0px;"),
-      style = "position: fixed; top: 56px; width: 93.75%; background-color: white; z-index: 100;"
+      hr(style = "margin-bottom: 0px;")
     ),
     fluidRow(
       column(

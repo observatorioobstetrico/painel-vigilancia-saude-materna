@@ -12,6 +12,8 @@
 
 app_ui <- function(request) {
   tagList(
+    includeCSS("inst/app/www/custom.css"),
+    tags$head(tags$script(src = "funcoes_javascript.js")),
     tags$style(HTML("
       .shiny-output-error-validation {
         color: black;
@@ -35,12 +37,12 @@ app_ui <- function(request) {
           title = HTML("<b> Painel de Vigilância da Saúde Materna </b>"),
           color = "primary",
           href = "https://observatorioobstetricobr.org/",
-          image = "www/logo-oobr2.png"
+          image = "www/logo-oobr.png"
         ),
         status = "primary"
       ),
       bs4Dash::bs4DashSidebar(
-        style = "z-index: 9999;",
+        #style = "z-index: 9999;",
         width = "470px",
         status = "navy",
         skin = "light",
@@ -110,9 +112,9 @@ app_ui <- function(request) {
         )
       ),
       bs4Dash::bs4DashBody(
+        div(class = "div-dependente"),
         conditionalPanel(
           condition = "input.abas != 'sobre' & input.abas != 'documentacao' & input.abas != 'aparecida'",
-          div(style = "margin-top: 71px;"),
           bs4Dash::bs4Card(
             width = 12,
             title = HTML("<b style='font-size:22px'> Filtros </b>"),
@@ -516,15 +518,6 @@ app_ui <- function(request) {
           ),
           style = "display: none;"
         ),
-        tags$script(HTML("
-          var openTab = function(tabName){
-            $('a', $('.sidebar')).each(function() {
-              if(this.getAttribute('data-value') == tabName) {
-                this.click()
-              };
-            });
-          }
-        ")),
         shinyjs::useShinyjs(),
         bs4Dash::bs4TabItems(
           bs4Dash::bs4TabItem(
@@ -569,13 +562,18 @@ app_ui <- function(request) {
           ),
           bs4Dash::bs4TabItem(
             tabName = "aparecida",
-            h2(tags$b("A história de Aparecida")),
+            div(
+              class = "div-titulo",
+              HTML("<span style='display: block; margin-bottom: 15px;'> </span>"),
+              h2(tags$b("A história de Aparecida"), style = "padding-left: 0.3em"),
+              hr(style = "margin-bottom: 0px;")
+            ),
             HTML(
               "
-              <p align='justify'; style='font-size:18px'>
+              <p align='justify'; style='font-size:18px; padding: 0 0.5em'>
               Para melhor entender os resultados dos indicadores apresentados neste painel em diferentes contextos e em como eles
               refletem as situações de vulnerabilidade da mulher ao óbito materno, acesse, clicando na imagem abaixo ou
-              <a href = 'https://observatorioobstetricobr.org/a-historia-de-aparecida/' target = _blank>neste link</a>, a história de Aparecida,
+              <a href = 'https://observatorioobstetricobr.org/a-historia-de-aparecida/' target = _blank>neste link</a>, a história de Aparecida -
               uma mulher preta, que mora num município pequeno, localizado no interior de um estado brasileiro. A história de Aparecida,
               apesar de não ser uma história real, retrata as condições de vida e saúde de muitas brasileiras, evidenciando a grande
               vulnerabilidade à morte materna a qual essas mulheres estão submetidas.
@@ -585,11 +583,11 @@ app_ui <- function(request) {
             HTML(
               '
               <div style = "display: flex; justify-content: center; align-items: center;">
-                <div class="card2 blue2" style = "width: 55vw; height: 67vh;">
-                <a href = "https://observatorioobstetricobr.org/a-historia-de-aparecida/" target = "_blank">
-                  <image src = "www/aparecida.png" style = "width: 100%; margin: auto; display: block;">
-                </a>
-              </div>
+                <div class="card2 blue2" style = "display: flex; justify-content: center; align-items: center; width: 55vw; height: 67vh;">
+                  <a href = "https://observatorioobstetricobr.org/a-historia-de-aparecida/" target = "_blank">
+                    <image src = "www/aparecida.png" style = "max-width: 100%; max-height: 100%;">
+                  </a>
+                </div>
               </div>
               '
             )
@@ -616,7 +614,7 @@ golem_add_external_resources <- function() {
   )
 
   tags$head(
-    favicon(),
+    favicon(ext = "png"),
     bundle_resources(
       path = app_sys("app/www"),
       app_title = "Painel de vigilância da saúde materna"

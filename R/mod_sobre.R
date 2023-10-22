@@ -11,7 +11,13 @@
 mod_sobre_ui <- function(id){
   ns <- NS(id)
   tagList(
-    HTML("<h2><b>Painel de Vigilância da Saúde Materna</b></h2>"),
+    tags$head(tags$style(".row {padding: 0 0.6em}")),
+    div(
+      class = "div-titulo",
+      HTML("<span style='display: block; margin-bottom: 15px;'> </span>"),
+      h2(tags$b("Painel de Vigilância da Saúde Materna"), style = "padding-left: 0.4em"),
+      hr(style = "margin-bottom: 0px;")
+    ),
     fluidRow(
       HTML(
         "
