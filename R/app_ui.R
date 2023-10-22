@@ -37,7 +37,7 @@ app_ui <- function(request) {
           title = HTML("<b> Painel de Vigilância da Saúde Materna </b>"),
           color = "primary",
           href = "https://observatorioobstetricobr.org/",
-          image = "www/logo-oobr.png"
+          image = "www/logos/logo-oobr-curto.png"
         ),
         status = "primary"
       ),
@@ -617,7 +617,7 @@ golem_add_external_resources <- function() {
     favicon(ext = "png"),
     bundle_resources(
       path = app_sys("app/www"),
-      app_title = "Painel de vigilância da saúde materna"
+      app_title = "Painel de Vigilância da Saúde Materna"
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()

@@ -17,31 +17,6 @@ mod_documentacao_ui <- function(id){
       h2(tags$b("Documentação dos indicadores"), style = "padding-left: 0.4em"),
       hr(style = "margin-bottom: 0px;")
     ),
-    # fluidRow(
-    #   column(
-    #     width = 12,
-    #     shinyWidgets::downloadBttn(
-    #       outputId = ns("report"),
-    #       color = "primary",
-    #       label = HTML("&nbsp; Fazer download do arquivo de documentação (provisório)"),
-    #       style = "unite",
-    #       size = "sm"
-    #     ),
-    #     align = "center"
-    #   )
-    # ),
-    # fluidRow(
-    #   HTML(
-    #     "
-    #       <p align='justify'; style='font-size:18px'>
-    #       O arquivo disponível abaixo contém toda a documentação dos indicadores existentes neste painel. Nele, estão disponíveis
-    #       as definição, métodos de cálculo, fontes, informações sobre a qualidade da informação e as referências utilizadas
-    #       para a construção de cada indicador. Até o momento, os indicadores foram calculados para o período de 2012 a 2020. O painel
-    #       será atualizado anualmente, após a consolidação das bases de dados utilizadas em sua construção.
-    #       </p>
-    #       "
-    #   )
-    # ),
     tags$iframe(
       style = "display: block;       /* iframes are inline by default */
     background: #000;

@@ -33,7 +33,7 @@ output:
     back_img: "inst/app/www/report/fundo.jpg"
     img_to_dark: FALSE
     logo_to_white: TRUE
-    other_css: "inst/app/www/report/teste.css"
+    other_css: "inst/app/www/report/css_report.css"
 knit: pagedown::chrome_print
 main-color: "#32A0FF"
 ---
