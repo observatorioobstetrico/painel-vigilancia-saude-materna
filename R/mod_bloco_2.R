@@ -654,51 +654,81 @@ mod_bloco_2_server <- function(id, filtros){
       )
     })
 
+    # output$caixa_b2_i3 <- renderUI({
+    #   cria_caixa_server(
+    #     dados = data_resumo2(),
+    #     indicador = "tx_abortos_mil_mulheres_valor_medio",
+    #     titulo = "Valor médio da taxa de abortos inseguros por mil MIF",
+    #     tem_meta = FALSE,
+    #     valor_de_referencia = data_resumo_brasil()$tx_abortos_mil_mulheres_valor_medio,
+    #     tipo = "taxa",
+    #     invertido = FALSE,
+    #     tamanho_caixa = "300px",
+    #     fonte_titulo = "15px",
+    #     pagina = "bloco_2",
+    #     nivel_de_analise = ifelse(
+    #       filtros()$comparar == "Não",
+    #       filtros()$nivel,
+    #       ifelse(
+    #         input$localidade_resumo == "escolha1",
+    #         filtros()$nivel,
+    #         filtros()$nivel2
+    #       )
+    #     )
+    #   )
+    # })
+
     output$caixa_b2_i3 <- renderUI({
-      cria_caixa_server(
-        dados = data_resumo2(),
-        indicador = "tx_abortos_mil_mulheres_valor_medio",
-        titulo = "Valor médio da taxa de abortos inseguros por mil MIF",
-        tem_meta = FALSE,
-        valor_de_referencia = data_resumo_brasil()$tx_abortos_mil_mulheres_valor_medio,
-        tipo = "taxa",
-        invertido = FALSE,
-        tamanho_caixa = "300px",
-        fonte_titulo = "15px",
-        pagina = "bloco_2",
-        nivel_de_analise = ifelse(
-          filtros()$comparar == "Não",
-          filtros()$nivel,
-          ifelse(
-            input$localidade_resumo == "escolha1",
-            filtros()$nivel,
-            filtros()$nivel2
-          )
-        )
+      bs4Dash::box(
+        style = glue::glue("height: 300px; overflow: auto; padding: 0;"),
+        width = 12,
+        collapsible = FALSE,
+        headerBorder = FALSE,
+        div(
+          style = glue::glue("font-size: 15px; height: 25%; overflow: auto; padding: 0 10px;"),
+          HTML(glue::glue("<b> Valor médio da taxa de abortos inseguros por mil MIF </b>"))
+        ),
+        div(style = "height: 8%"),
+        div(style = "font-size: 14px; height: 45%; overflow: auto; padding: 0 10px; display: flex; justify-content: center; align-items: center;", HTML(glue::glue("<b> Este indicador está sob revisão. </b>")))
       )
     })
 
+    # output$caixa_b2_i4 <- renderUI({
+    #   cria_caixa_server(
+    #     dados = data_resumo2(),
+    #     indicador = "tx_abortos_cem_nascidos_vivos_valor_medio",
+    #     titulo = "Valor médio da razão de abortos inseguros por 100 nascidos vivos",
+    #     tem_meta = FALSE,
+    #     valor_de_referencia = data_resumo_brasil()$tx_abortos_cem_nascidos_vivos_valor_medio,
+    #     tipo = "taxa",
+    #     invertido = FALSE,
+    #     tamanho_caixa = "300px",
+    #     fonte_titulo = "15px",
+    #     pagina = "bloco_2",
+    #     nivel_de_analise = ifelse(
+    #       filtros()$comparar == "Não",
+    #       filtros()$nivel,
+    #       ifelse(
+    #         input$localidade_resumo == "escolha1",
+    #         filtros()$nivel,
+    #         filtros()$nivel2
+    #       )
+    #     )
+    #   )
+    # })
+
     output$caixa_b2_i4 <- renderUI({
-      cria_caixa_server(
-        dados = data_resumo2(),
-        indicador = "tx_abortos_cem_nascidos_vivos_valor_medio",
-        titulo = "Valor médio da razão de abortos inseguros por 100 nascidos vivos",
-        tem_meta = FALSE,
-        valor_de_referencia = data_resumo_brasil()$tx_abortos_cem_nascidos_vivos_valor_medio,
-        tipo = "taxa",
-        invertido = FALSE,
-        tamanho_caixa = "300px",
-        fonte_titulo = "15px",
-        pagina = "bloco_2",
-        nivel_de_analise = ifelse(
-          filtros()$comparar == "Não",
-          filtros()$nivel,
-          ifelse(
-            input$localidade_resumo == "escolha1",
-            filtros()$nivel,
-            filtros()$nivel2
-          )
-        )
+      bs4Dash::box(
+        style = glue::glue("height: 300px; overflow: auto; padding: 0;"),
+        width = 12,
+        collapsible = FALSE,
+        headerBorder = FALSE,
+        div(
+          style = glue::glue("font-size: 15px; height: 25%; overflow: auto; padding: 0 10px;"),
+          HTML(glue::glue("<b> Valor médio da razão de abortos inseguros por 100 nascidos vivos </b>"))
+        ),
+        div(style = "height: 8%"),
+        div(style = "font-size: 14px; height: 45%; overflow: auto; padding: 0 10px; display: flex; justify-content: center; align-items: center;", HTML(glue::glue("<b> Este indicador está sob revisão. </b>")))
       )
     })
 
@@ -861,14 +891,15 @@ mod_bloco_2_server <- function(id, filtros){
       }
     })
 
-
+    mostrar <- FALSE
     ##### Criando o gráfico da taxa de abortos inseguros por mil mulheres em idade fértil #####
     output$plot3 <- highcharter::renderHighchart({
       validate(
-        need(
-          filtros()$ano2[2] >= 2015,
-          "Este indicador só está disponível a partir de 2014."
-        )
+        # need(
+        #   filtros()$ano2[2] >= 2015,
+        #   "Este indicador só está disponível a partir de 2014."
+        # )
+        need(mostrar == TRUE, "Este indicador está sob revisão.")
       )
       if (filtros()$comparar == "Não") {
         grafico_base <- highcharter::highchart() |>
@@ -946,10 +977,11 @@ mod_bloco_2_server <- function(id, filtros){
 
     output$plot4 <- highcharter::renderHighchart({
       validate(
-        need(
-          filtros()$ano2[2] >= 2015,
-          "Este indicador só está disponível a partir de 2014."
-        )
+        # need(
+        #   filtros()$ano2[2] >= 2015,
+        #   "Este indicador só está disponível a partir de 2014."
+        # )
+        need(mostrar == TRUE, "Este indicador está sob revisão.")
       )
       if (filtros()$comparar == "Não") {
         grafico_base <- highcharter::highchart() |>

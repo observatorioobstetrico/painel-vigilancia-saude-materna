@@ -287,7 +287,8 @@ mod_nivel_3_server <- function(id, filtros){
 
 
     output$gauge1 <- renderUI({
-      if (infos_indicador()$num_indicadores_incompletude == 0 & !(infos_indicador()$nome_abreviado %in% c("tx_abortos_cem_nascidos_vivos_valor_medio", "porc_sc"))) {
+      #if (infos_indicador()$num_indicadores_incompletude == 0 & !(infos_indicador()$nome_abreviado %in% c("tx_abortos_cem_nascidos_vivos_valor_medio", "porc_sc"))) {
+      if (infos_indicador()$num_indicadores_incompletude == 0 & !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio", "porc_sc"))) {
         if (infos_indicador()$nome_abreviado == "porc_dependentes_sus") {
           div(
             style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
@@ -307,16 +308,16 @@ mod_nivel_3_server <- function(id, filtros){
             do IBGE, que se tornam mais imprecisas quando o período intercensitário é maior."
             )
           )
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
-          div(
-            style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
-            HTML(
-              "
-          Este indicador depende da cobertura e da qualidade do preenchimento do SIH/SUS e das internações
-          hospitalares em serviços do sistema de saúde suplementar, bem como do cálculo das estimativas populacionais, que
-            se tornam mais imprecisas conforme aumento o período intercensitário."
-            )
-          )
+        #} else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
+          # div(
+          #   style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
+          #   HTML(
+          #     "
+          # Este indicador depende da cobertura e da qualidade do preenchimento do SIH/SUS e das internações
+          # hospitalares em serviços do sistema de saúde suplementar, bem como do cálculo das estimativas populacionais, que
+          #   se tornam mais imprecisas conforme aumento o período intercensitário."
+          #   )
+          # )
         } else if (infos_indicador()$bloco == "bloco6_morbidade") {
           div(
             style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
@@ -353,6 +354,12 @@ mod_nivel_3_server <- function(id, filtros){
         div(
           style = 'text-align: center;',
           flexdashboard::renderGauge({
+            validate(
+              need(
+                !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
+                "Este indicador está sob revisão."
+              )
+            )
             flexdashboard::gauge(
               valor,
               min = 0,
@@ -366,7 +373,9 @@ mod_nivel_3_server <- function(id, filtros){
               )
             )
           }),
-          HTML("dos anos considerados apresentam problemas de qualidade nas variáveis necessárias para a construção do indicador")
+          if (!(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio"))) {
+            HTML("dos anos considerados apresentam problemas de qualidade nas variáveis necessárias para a construção do indicador")
+          }
         )
       }
 
@@ -958,19 +967,18 @@ mod_nivel_3_server <- function(id, filtros){
               proporcao = round(numerador/denominador * 100, 1)
             ) |>
             dplyr::ungroup()
-        }
-        else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
-        bloco2 |>
-          dplyr::filter(
-            ano >= max(filtros()$ano2[1], 2015) & ano <= filtros()$ano2[2]
-          ) |>
-          dplyr::group_by(regiao) |>
-          dplyr::summarise(
-            numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE)*0.90) + (sum(abortos_sus_30_a_39, na.rm = TRUE)*0.85) + (sum(abortos_sus_40_a_49, na.rm = TRUE)*0.75)) * 3) + (((sum(abortos_ans_menor_30, na.rm = TRUE)*0.90) + (sum(abortos_ans_30_a_39, na.rm = TRUE)*0.85) + (sum(abortos_ans_40_a_49, na.rm = TRUE)*0.75)) * 2)),
-            denominador := sum(pop_fem_10_49, na.rm = TRUE),
-            proporcao = round(numerador/denominador * 1000, 1)
-          ) |>
-          dplyr::ungroup()
+        } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
+          bloco2 |>
+            dplyr::filter(
+              ano >= max(filtros()$ano2[1], 2015) & ano <= filtros()$ano2[2]
+            ) |>
+            dplyr::group_by(regiao) |>
+            dplyr::summarise(
+              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE)*0.90) + (sum(abortos_sus_30_a_39, na.rm = TRUE)*0.85) + (sum(abortos_sus_40_a_49, na.rm = TRUE)*0.75)) * 3) + (((sum(abortos_ans_menor_30, na.rm = TRUE)*0.90) + (sum(abortos_ans_30_a_39, na.rm = TRUE)*0.85) + (sum(abortos_ans_40_a_49, na.rm = TRUE)*0.75)) * 2)),
+              denominador := sum(pop_fem_10_49, na.rm = TRUE),
+              proporcao = round(numerador/denominador * 1000, 1)
+            ) |>
+            dplyr::ungroup()
         } else if (infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio") {
           bloco2 |>
             dplyr::filter(
@@ -1915,6 +1923,12 @@ mod_nivel_3_server <- function(id, filtros){
     output$grafico_incompletude <- highcharter::renderHighchart({
       validate(
         need(
+          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
+          "Este indicador está sob revisão."
+        )
+      )
+      validate(
+        need(
           infos_indicador()$num_indicadores_incompletude != 0,
           "Informações a respeito da incompletude das variáveis necessárias para a construção deste indicador não estão disponíveis."
         )
@@ -2043,6 +2057,12 @@ mod_nivel_3_server <- function(id, filtros){
 
 
     output$grafico_cobertura <- highcharter::renderHighchart({
+      validate(
+        need(
+          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
+          "Este indicador está sob revisão."
+        )
+      )
       if (infos_indicador()$num_indicadores_incompletude == 0) {
         if (infos_indicador()$nome_abreviado != "porc_sc" & infos_indicador()$nome_abreviado != "tx_abortos_cem_nascidos_vivos_valor_medio") {
           validate("Informações a respeito da cobertura dos sistemas de informação utilizados para a construção deste indicador não estão disponíveis.")
@@ -2129,41 +2149,54 @@ mod_nivel_3_server <- function(id, filtros){
 
 
     output$grafico_regioes <- highcharter::renderHighchart({
-        proporcoes <- data_grafico_regioes()$proporcao
-        regioes <- data_grafico_regioes()$regiao
-        df <- data.frame(regioes, proporcoes)
+      validate(
+        need(
+          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
+          "Este indicador está sob revisão."
+        )
+      )
 
-        highcharter::hchart(
-          df,
-          type = "column",
-          name = stringr::str_replace(infos_indicador()$indicador, "Porcentagem", "%"),
-          # name = dplyr::case_when(
-          #   infos_indicador()$tipo_do_indicador == "porcentagem" ~ "Porcentagem",
+      proporcoes <- data_grafico_regioes()$proporcao
+      regioes <- data_grafico_regioes()$regiao
+      df <- data.frame(regioes, proporcoes)
+
+      highcharter::hchart(
+        df,
+        type = "column",
+        name = stringr::str_replace(infos_indicador()$indicador, "Porcentagem", "%"),
+        # name = dplyr::case_when(
+        #   infos_indicador()$tipo_do_indicador == "porcentagem" ~ "Porcentagem",
+        #   infos_indicador()$tipo_do_indicador == "taxa" ~ "Taxa",
+        #   infos_indicador()$tipo_do_indicador == "absoluto" ~ "Frequência"
+        # ),
+        highcharter::hcaes(
+          x = regioes,
+          y = proporcoes,
+          color = c("#FE9F6DFF", "#DE4968FF", "#8C2981FF", "#3B0F70FF", "#000004FF")
+        )
+      ) |>
+        highcharter::hc_tooltip(valueSuffix = dplyr::if_else(infos_indicador()$tipo_do_indicador == "porcentagem", "%", "")) |>
+        highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+        highcharter::hc_yAxis(title = list(
+          # text = dplyr::case_when(
+          #   infos_indicador()$tipo_do_indicador == "porcentagem" ~ "%",
           #   infos_indicador()$tipo_do_indicador == "taxa" ~ "Taxa",
           #   infos_indicador()$tipo_do_indicador == "absoluto" ~ "Frequência"
-          # ),
-          highcharter::hcaes(
-            x = regioes,
-            y = proporcoes,
-            color = c("#FE9F6DFF", "#DE4968FF", "#8C2981FF", "#3B0F70FF", "#000004FF")
-          )
-        ) |>
-          highcharter::hc_tooltip(valueSuffix = dplyr::if_else(infos_indicador()$tipo_do_indicador == "porcentagem", "%", "")) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
-          highcharter::hc_yAxis(title = list(
-            # text = dplyr::case_when(
-            #   infos_indicador()$tipo_do_indicador == "porcentagem" ~ "%",
-            #   infos_indicador()$tipo_do_indicador == "taxa" ~ "Taxa",
-            #   infos_indicador()$tipo_do_indicador == "absoluto" ~ "Frequência"
-            #   )
-            text = stringr::str_replace(infos_indicador()$indicador, "Porcentagem", "%")
-            ),
-            min = 0
-          )
+          #   )
+          text = stringr::str_replace(infos_indicador()$indicador, "Porcentagem", "%")
+          ),
+          min = 0
+        )
 
     })
 
     output$grafico_serie <- highcharter::renderHighchart({
+      validate(
+        need(
+          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
+          "Este indicador está sob revisão."
+        )
+      )
       if (!(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")) & !(base::startsWith(infos_indicador()$indicador, "Medianas"))) {
         if (infos_indicador()$nome_abreviado == "rmm") {
           grafico_base <- highcharter::highchart() |>
@@ -2341,6 +2374,12 @@ mod_nivel_3_server <- function(id, filtros){
     })
 
     output$tabela1 <- reactable::renderReactable({
+      validate(
+        need(
+          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
+          "Este indicador está sob revisão."
+        )
+      )
       proporcao_geral <- function(numerador, denominador, fator, tipo_do_indicador) {
         reactable::JS(
           paste0(
