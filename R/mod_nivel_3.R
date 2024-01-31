@@ -308,16 +308,16 @@ mod_nivel_3_server <- function(id, filtros){
             do IBGE, que se tornam mais imprecisas quando o período intercensitário é maior."
             )
           )
-        #} else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
-          # div(
-          #   style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
-          #   HTML(
-          #     "
-          # Este indicador depende da cobertura e da qualidade do preenchimento do SIH/SUS e das internações
-          # hospitalares em serviços do sistema de saúde suplementar, bem como do cálculo das estimativas populacionais, que
-          #   se tornam mais imprecisas conforme aumento o período intercensitário."
-          #   )
-          # )
+        } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
+        div(
+          style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
+          HTML(
+            "
+        Este indicador depende da cobertura e da qualidade do preenchimento do SIH/SUS e das internações
+        hospitalares em serviços do sistema de saúde suplementar, bem como do cálculo das estimativas populacionais, que
+          se tornam mais imprecisas conforme aumento o período intercensitário."
+          )
+        )
         } else if (infos_indicador()$bloco == "bloco6_morbidade") {
           div(
             style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
@@ -354,12 +354,6 @@ mod_nivel_3_server <- function(id, filtros){
         div(
           style = 'text-align: center;',
           flexdashboard::renderGauge({
-            validate(
-              need(
-                !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
-                "Este indicador está sob revisão."
-              )
-            )
             flexdashboard::gauge(
               valor,
               min = 0,
@@ -373,9 +367,7 @@ mod_nivel_3_server <- function(id, filtros){
               )
             )
           }),
-          if (!(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio"))) {
-            HTML("dos anos considerados apresentam problemas de qualidade nas variáveis necessárias para a construção do indicador")
-          }
+          HTML("dos anos considerados apresentam problemas de qualidade nas variáveis necessárias para a construção do indicador")
         )
       }
 
@@ -974,8 +966,8 @@ mod_nivel_3_server <- function(id, filtros){
             ) |>
             dplyr::group_by(regiao) |>
             dplyr::summarise(
-              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE)*0.90) + (sum(abortos_sus_30_a_39, na.rm = TRUE)*0.85) + (sum(abortos_sus_40_a_49, na.rm = TRUE)*0.75)) * 3) + (((sum(abortos_ans_menor_30, na.rm = TRUE)*0.90) + (sum(abortos_ans_30_a_39, na.rm = TRUE)*0.85) + (sum(abortos_ans_40_a_49, na.rm = TRUE)*0.75)) * 2)),
-              denominador := sum(pop_fem_10_49, na.rm = TRUE),
+              numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
+              denominador := sum(pop_fem_10_49),
               proporcao = round(numerador/denominador * 1000, 1)
             ) |>
             dplyr::ungroup()
@@ -986,8 +978,8 @@ mod_nivel_3_server <- function(id, filtros){
             ) |>
             dplyr::group_by(regiao) |>
             dplyr::summarise(
-              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE)*0.9)+(sum(abortos_sus_30_a_39, na.rm = TRUE)*0.85)+(sum(abortos_sus_40_a_49, na.rm = TRUE)*0.75))*3)+(((sum(abortos_ans_menor_30, na.rm = TRUE)*0.9)+(sum(abortos_ans_30_a_39, na.rm = TRUE)*0.85)+(sum(abortos_ans_40_a_49, na.rm = TRUE)*0.75))*2)),
-              denominador := sum(total_de_nascidos_vivos, na.rm = TRUE),
+              numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
+              denominador := sum(total_de_nascidos_vivos),
               proporcao = round(numerador/denominador * 100, 1)
             ) |>
             dplyr::ungroup()
@@ -1179,9 +1171,9 @@ mod_nivel_3_server <- function(id, filtros){
             ) |>
             dplyr::group_by(ano) |>
             dplyr::summarise(
-              tx_abortos_mil_mulheres_lim_inf = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 2) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 1)) / sum(pop_fem_10_49) * 1000, 1),
-              tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 3) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 2)) / sum(pop_fem_10_49) * 1000, 1),
-              tx_abortos_mil_mulheres_lim_sup = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 4) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 3)) / sum(pop_fem_10_49) * 1000, 1),
+              tx_abortos_mil_mulheres_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(pop_fem_10_49) * 1000, 1),
+              tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(pop_fem_10_49) * 1000, 1),
+              tx_abortos_mil_mulheres_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(pop_fem_10_49) * 1000, 1),
               class = dplyr::case_when(
                 filtros()$nivel == "Nacional" ~ "Brasil",
                 filtros()$nivel == "Regional" ~ filtros()$regiao,
@@ -1212,9 +1204,9 @@ mod_nivel_3_server <- function(id, filtros){
             ) |>
             dplyr::group_by(ano) |>
             dplyr::summarise(
-              tx_abortos_cem_nascidos_vivos_lim_inf = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*2)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*1))/sum(total_de_nascidos_vivos) *100, 1),
-              tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*3)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*2))/sum(total_de_nascidos_vivos) *100, 1),
-              tx_abortos_cem_nascidos_vivos_lim_sup = round(((((sum(abortos_sus_menor_30)*0.90)+ (sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*4) + (((sum(abortos_ans_menor_30)*0.90)+(sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75))*3))/sum(total_de_nascidos_vivos) * 100, 1),
+              tx_abortos_cem_nascidos_vivos_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
+              tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(total_de_nascidos_vivos) * 100, 1),
+              tx_abortos_cem_nascidos_vivos_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1),
               class = dplyr::case_when(
                 filtros()$nivel == "Nacional" ~ "Brasil",
                 filtros()$nivel == "Regional" ~ filtros()$regiao,
@@ -1454,10 +1446,10 @@ mod_nivel_3_server <- function(id, filtros){
             ) |>
             dplyr::group_by(ano) |>
             dplyr::summarise(
-              tx_abortos_mil_mulheres_lim_inf = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 2) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 1)) / sum(pop_fem_10_49) * 1000, 1),
-              tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 3) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 2)) / sum(pop_fem_10_49) * 1000, 1),
-              tx_abortos_mil_mulheres_lim_sup = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 4) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 3)) / sum(pop_fem_10_49) * 1000, 1),
-              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE)*0.90) + (sum(abortos_sus_30_a_39, na.rm = TRUE)*0.85) + (sum(abortos_sus_40_a_49, na.rm = TRUE)*0.75)) * 3) + (((sum(abortos_ans_menor_30, na.rm = TRUE)*0.90) + (sum(abortos_ans_30_a_39, na.rm = TRUE)*0.85) + (sum(abortos_ans_40_a_49, na.rm = TRUE)*0.75)) * 2)),
+              tx_abortos_mil_mulheres_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(pop_fem_10_49) * 1000, 1),
+              tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(pop_fem_10_49) * 1000, 1),
+              tx_abortos_mil_mulheres_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(pop_fem_10_49) * 1000, 1),
+              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE) * 0.9) + (sum(abortos_sus_30_a_39, na.rm = TRUE) * 0.85) + (sum(abortos_sus_40_a_49, na.rm = TRUE) * 0.75)) * 4) + (((sum(abortos_ans_menor_30, na.rm = TRUE) * 0.9) + (sum(abortos_ans_30_a_39, na.rm = TRUE) * 0.85) + (sum(abortos_ans_40_a_49, na.rm = TRUE) * 0.75)) * 6)),
               denominador := sum(pop_fem_10_49, na.rm = TRUE),
               proporcao = round(numerador/denominador * 1000, 1),
               class = "Referência (média nacional)"
@@ -1471,10 +1463,10 @@ mod_nivel_3_server <- function(id, filtros){
             ) |>
             dplyr::group_by(ano) |>
             dplyr::summarise(
-              tx_abortos_cem_nascidos_vivos_lim_inf = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*2)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*1))/sum(total_de_nascidos_vivos) *100, 1),
-              tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*3)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*2))/sum(total_de_nascidos_vivos) *100, 1),
-              tx_abortos_cem_nascidos_vivos_lim_sup = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*4)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*3))/sum(total_de_nascidos_vivos) *100, 1),
-              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE)*0.9)+(sum(abortos_sus_30_a_39, na.rm = TRUE)*0.85)+(sum(abortos_sus_40_a_49, na.rm = TRUE)*0.75))*3)+(((sum(abortos_ans_menor_30, na.rm = TRUE)*0.9)+(sum(abortos_ans_30_a_39, na.rm = TRUE)*0.85)+(sum(abortos_ans_40_a_49, na.rm = TRUE)*0.75))*2)),
+              tx_abortos_cem_nascidos_vivos_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
+              tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(total_de_nascidos_vivos) * 100, 1),
+              tx_abortos_cem_nascidos_vivos_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1),
+              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE) * 0.9) + (sum(abortos_sus_30_a_39, na.rm = TRUE) * 0.85) + (sum(abortos_sus_40_a_49, na.rm = TRUE) * 0.75)) * 4) + (((sum(abortos_ans_menor_30, na.rm = TRUE) * 0.9) + (sum(abortos_ans_30_a_39, na.rm = TRUE) * 0.85) + (sum(abortos_ans_40_a_49, na.rm = TRUE) * 0.75)) * 6)),
               denominador := sum(total_de_nascidos_vivos, na.rm = TRUE),
               proporcao = round(numerador/denominador * 100, 1),
               class = "Referência (média nacional)"
@@ -1775,7 +1767,7 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
-                numerador := ((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 3) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 2)),
+                numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
                 denominador := sum(pop_fem_10_49, na.rm = TRUE),
                 proporcao := dplyr::if_else(
                   condition = infos_indicador()$tipo_do_indicador == "porcentagem",
@@ -1803,7 +1795,7 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
-                numerador := ((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 3) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 2)),
+                numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
                 denominador := sum(pop_fem_10_49, na.rm = TRUE),
                 proporcao := dplyr::if_else(
                   condition = infos_indicador()$tipo_do_indicador == "porcentagem",
@@ -1821,7 +1813,7 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
-                numerador := ((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*3)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*2)),
+                numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
                 denominador := sum(total_de_nascidos_vivos),
                 proporcao := dplyr::if_else(
                   condition = infos_indicador()$tipo_do_indicador == "porcentagem",
@@ -1849,7 +1841,7 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
-                numerador := ((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*3)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*2)),
+                numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
                 denominador := sum(total_de_nascidos_vivos),
                 proporcao := dplyr::if_else(
                   condition = infos_indicador()$tipo_do_indicador == "porcentagem",
@@ -1921,12 +1913,6 @@ mod_nivel_3_server <- function(id, filtros){
 
 
     output$grafico_incompletude <- highcharter::renderHighchart({
-      validate(
-        need(
-          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
-          "Este indicador está sob revisão."
-        )
-      )
       validate(
         need(
           infos_indicador()$num_indicadores_incompletude != 0,
@@ -2057,12 +2043,6 @@ mod_nivel_3_server <- function(id, filtros){
 
 
     output$grafico_cobertura <- highcharter::renderHighchart({
-      validate(
-        need(
-          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
-          "Este indicador está sob revisão."
-        )
-      )
       if (infos_indicador()$num_indicadores_incompletude == 0) {
         if (infos_indicador()$nome_abreviado != "porc_sc" & infos_indicador()$nome_abreviado != "tx_abortos_cem_nascidos_vivos_valor_medio") {
           validate("Informações a respeito da cobertura dos sistemas de informação utilizados para a construção deste indicador não estão disponíveis.")
@@ -2149,12 +2129,6 @@ mod_nivel_3_server <- function(id, filtros){
 
 
     output$grafico_regioes <- highcharter::renderHighchart({
-      validate(
-        need(
-          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
-          "Este indicador está sob revisão."
-        )
-      )
 
       proporcoes <- data_grafico_regioes()$proporcao
       regioes <- data_grafico_regioes()$regiao
@@ -2191,12 +2165,6 @@ mod_nivel_3_server <- function(id, filtros){
     })
 
     output$grafico_serie <- highcharter::renderHighchart({
-      validate(
-        need(
-          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
-          "Este indicador está sob revisão."
-        )
-      )
       if (!(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")) & !(base::startsWith(infos_indicador()$indicador, "Medianas"))) {
         if (infos_indicador()$nome_abreviado == "rmm") {
           grafico_base <- highcharter::highchart() |>
@@ -2374,12 +2342,6 @@ mod_nivel_3_server <- function(id, filtros){
     })
 
     output$tabela1 <- reactable::renderReactable({
-      validate(
-        need(
-          !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
-          "Este indicador está sob revisão."
-        )
-      )
       proporcao_geral <- function(numerador, denominador, fator, tipo_do_indicador) {
         reactable::JS(
           paste0(

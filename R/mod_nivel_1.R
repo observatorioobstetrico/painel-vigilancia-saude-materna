@@ -1444,12 +1444,12 @@ mod_nivel_1_server <- function(id, filtros){
           total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
           porc_menor20 = round(sum(nvm_menor_que_20)/sum(pop_feminina_10_a_19)*1000, 1),
           porc_mais_3pt = round(sum(mulheres_com_mais_de_tres_partos_anteriores)/total_de_nascidos_vivos*100, 1),
-          tx_abortos_mil_mulheres_lim_inf = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 2) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 1)) / sum(pop_fem_10_49) * 1000, 1),
-          tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 3) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 2)) / sum(pop_fem_10_49) * 1000, 1),
-          tx_abortos_mil_mulheres_lim_sup = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 4) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 3)) / sum(pop_fem_10_49) * 1000, 1),
-          tx_abortos_cem_nascidos_vivos_lim_inf = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*2)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*1))/sum(total_de_nascidos_vivos) *100, 1),
-          tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*3)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*2))/sum(total_de_nascidos_vivos) *100, 1),
-          tx_abortos_cem_nascidos_vivos_lim_sup = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*4)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*3))/sum(total_de_nascidos_vivos) *100, 1)
+          tx_abortos_mil_mulheres_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(pop_fem_10_49) * 1000, 1),
+          tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(pop_fem_10_49) * 1000, 1),
+          tx_abortos_mil_mulheres_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(pop_fem_10_49) * 1000, 1),
+          tx_abortos_cem_nascidos_vivos_lim_inf =round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
+          tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(total_de_nascidos_vivos) * 100, 1),
+          tx_abortos_cem_nascidos_vivos_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1)
         ) |>
         dplyr::ungroup()
     })
@@ -1464,14 +1464,14 @@ mod_nivel_1_server <- function(id, filtros){
           total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
           porc_menor20 = 30,
           porc_mais_3pt = round(sum(mulheres_com_mais_de_tres_partos_anteriores)/total_de_nascidos_vivos*100, 1),
-          tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30)*0.90) + (sum(abortos_sus_30_a_39)*0.85) + (sum(abortos_sus_40_a_49)*0.75)) * 3) + (((sum(abortos_ans_menor_30)*0.90) + (sum(abortos_ans_30_a_39)*0.85) + (sum(abortos_ans_40_a_49)*0.75)) * 2)) / sum(pop_fem_10_49) * 1000, 1),
-          tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30)*0.9)+(sum(abortos_sus_30_a_39)*0.85)+(sum(abortos_sus_40_a_49)*0.75))*3)+(((sum(abortos_ans_menor_30)*0.9)+(sum(abortos_ans_30_a_39)*0.85)+(sum(abortos_ans_40_a_49)*0.75))*2))/sum(total_de_nascidos_vivos) *100, 1),
+          tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(pop_fem_10_49) * 1000, 1),
+          tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(total_de_nascidos_vivos) * 100, 1)
         ) |>
         dplyr::ungroup()
     })
 
 
-    #### Criando as caixinhas para os indicadores do segundo bloco #####
+    ##### Criando as caixinhas para os indicadores do segundo bloco #####
     output$caixa_b2_i1 <- renderUI({
       cria_caixa_server(
         dados = data2(),
@@ -1501,64 +1501,31 @@ mod_nivel_1_server <- function(id, filtros){
       )
     })
 
-    # output$caixa_b2_i3 <- renderUI({
-    #   cria_caixa_server(
-    #     dados = data2() |> dplyr::filter(ano >= 2015),
-    #     indicador = "tx_abortos_mil_mulheres_valor_medio",
-    #     titulo = "Valor médio da taxa de abortos inseguros por mil MIF",
-    #     tem_meta = FALSE,
-    #     valor_de_referencia = data2_comp()$tx_abortos_mil_mulheres_valor_medio,
-    #     tipo = "taxa",
-    #     invertido = FALSE,
-    #     pagina = "nivel_1",
-    #     nivel_de_analise = filtros()$nivel,
-    #     texto_caixa = "Este indicador está sob revisão."
-    #   )
-    # })
-
     output$caixa_b2_i3 <- renderUI({
-      bs4Dash::box(
-        style = glue::glue("height: 300px; overflow: auto; padding: 0;"),
-        width = 12,
-        collapsible = FALSE,
-        headerBorder = FALSE,
-        div(
-          style = glue::glue("font-size: 15px; height: 25%; overflow: auto; padding: 0 10px;"),
-          HTML(glue::glue("<b> Valor médio da taxa de abortos inseguros por mil MIF </b>"))
-        ),
-        div(style = "height: 8%"),
-        div(style = "font-size: 14px; height: 45%; overflow: auto; padding: 0 10px; display: flex; justify-content: center; align-items: center;", HTML(glue::glue("<b> Este indicador está sob revisão. </b>")))
+      cria_caixa_server(
+        dados = data2() |> dplyr::filter(ano >= 2015),
+        indicador = "tx_abortos_mil_mulheres_valor_medio",
+        titulo = "Valor médio da taxa de abortos inseguros por mil MIF",
+        tem_meta = FALSE,
+        valor_de_referencia = data2_comp()$tx_abortos_mil_mulheres_valor_medio,
+        tipo = "taxa",
+        invertido = FALSE,
+        pagina = "nivel_1",
+        nivel_de_analise = filtros()$nivel
       )
     })
 
-
-    # output$caixa_b2_i4 <- renderUI({
-    #   cria_caixa_server(
-    #     dados = data2() |> dplyr::filter(ano >= 2015),
-    #     indicador = "tx_abortos_cem_nascidos_vivos_valor_medio",
-    #     titulo = "Valor médio da razão de abortos inseguros por 100 nascidos vivos",
-    #     tem_meta = FALSE,
-    #     valor_de_referencia = data2_comp()$tx_abortos_cem_nascidos_vivos_valor_medio,
-    #     tipo = "taxa",
-    #     invertido = FALSE,
-    #     pagina = "nivel_1",
-    #     nivel_de_analise = filtros()$nivel,
-    #     texto_caixa = "Este indicador está sob revisão."
-    #   )
-    # })
-
     output$caixa_b2_i4 <- renderUI({
-      bs4Dash::box(
-        style = glue::glue("height: 300px; overflow: auto; padding: 0;"),
-        width = 12,
-        collapsible = FALSE,
-        headerBorder = FALSE,
-        div(
-          style = glue::glue("font-size: 15px; height: 25%; overflow: auto; padding: 0 10px;"),
-          HTML(glue::glue("<b> Valor médio da razão de abortos inseguros por 100 nascidos vivos </b>"))
-        ),
-        div(style = "height: 8%"),
-        div(style = "font-size: 14px; height: 45%; overflow: auto; padding: 0 10px; display: flex; justify-content: center; align-items: center;", HTML(glue::glue("<b> Este indicador está sob revisão. </b>")))
+      cria_caixa_server(
+        dados = data2() |> dplyr::filter(ano >= 2015),
+        indicador = "tx_abortos_cem_nascidos_vivos_valor_medio",
+        titulo = "Valor médio da razão de abortos inseguros por 100 nascidos vivos",
+        tem_meta = FALSE,
+        valor_de_referencia = data2_comp()$tx_abortos_cem_nascidos_vivos_valor_medio,
+        tipo = "taxa",
+        invertido = FALSE,
+        pagina = "nivel_1",
+        nivel_de_analise = filtros()$nivel
       )
     })
 

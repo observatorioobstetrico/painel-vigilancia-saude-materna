@@ -90,10 +90,9 @@ tabela_aux_municipios <- dplyr::left_join(dplyr::left_join(aux_municipios, aux_i
 bloco1_aux <- read.csv("data-raw/csv/indicadores_bloco1_socioeconomicos_2012-2020.csv") |>
   janitor::clean_names()
 
-bloco2_aux <- readr::read_delim("data-raw/csv/indicadores_bloco2_planejamento_reprodutivo_SUS_ANS_2012_2020.csv",
-                           delim = ";", escape_double = FALSE, trim_ws = TRUE) |>
+bloco2_aux <- read.csv("data-raw/csv/indicadores_bloco2_planejamento_reprodutivo_SUS_ANS_2012_2021.csv") |>
   janitor::clean_names() |>
-  dplyr::filter(codmunres %in% aux_municipios$codmunres)
+  dplyr::filter(codmunres %in% aux_municipios$codmunres, ano < 2021)
 
 bloco3_aux <- read.csv("data-raw/csv/indicadores_bloco3_assistencia_pre-natal_2012-2020.csv") |>
   janitor::clean_names()

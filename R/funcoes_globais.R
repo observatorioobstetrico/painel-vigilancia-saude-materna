@@ -213,7 +213,6 @@ cria_caixa_server <- function(dados, indicador, titulo, tem_meta = FALSE, nivel_
   )
 
 
-
 }
 
 
@@ -253,7 +252,7 @@ cria_modal_incompletude <- function(df, incompletude1, variavel_incompletude1 = 
   if (length(anos1_aux) > 1) {
     if (bloco == "bloco6") {
       texto_incompletude <- glue::glue("Os <span style = 'font-weight: 700'>óbitos de mulheres em idade fértil (MIF)</span> apresentam problemas de investigação nos anos de <span style = 'font-weight: 700'> {anos1}.
-           </span> Nesses anos, a porcentagem de óbitos não investigados dessa população foi, respectivamente, de <span style = 'font-weight: 700'> {valores_incompletude1}. </span>
+           </span> Nesses anos, a porcentagem de óbitos investigados dessa população foi, respectivamente, de <span style = 'font-weight: 700'> {valores_incompletude1}. </span>
            São considerados como valores ideais aqueles acima de 90%.")
     } else if (bloco == "deslocamento") {
       texto_incompletude <- glue::glue("As Declarações de Nascidos Vivos apresentam problemas de <span style = 'font-weight: 700'>preenchimento do CNES</span> nos anos de <span style = 'font-weight: 700'> {anos1}.
@@ -276,7 +275,7 @@ cria_modal_incompletude <- function(df, incompletude1, variavel_incompletude1 = 
   } else if (length(anos1_aux) == 1) {
     if (bloco == "bloco6") {
       texto_incompletude <- glue::glue("Os <span style = 'font-weight: 700'>óbitos de mulheres em idade fértil (MIF)</span> apresentam problemas de investigação no ano de <span style = 'font-weight: 700'> {anos1_aux}.
-           </span> Nesse ano, a porcentagem de óbitos não investigados dessa população foi de <span style = 'font-weight: 700'> {val_incomp1_aux}%. </span>
+           </span> Nesse ano, a porcentagem de óbitos investigados dessa população foi de <span style = 'font-weight: 700'> {val_incomp1_aux}%. </span>
            São considerados como valores ideais aqueles acima de 90%.")
     } else if (bloco == "deslocamento") {
       texto_incompletude <- glue::glue("As Declarações de Nascidos Vivos apresentam problemas de <span style = 'font-weight: 700'>preenchimento do CNES</span> no ano de <span style = 'font-weight: 700'> {anos1_aux}.
@@ -352,7 +351,7 @@ cria_modal_incompletude <- function(df, incompletude1, variavel_incompletude1 = 
     if (length(anos2_aux) > 1) {
       if (bloco == "bloco6") {
         texto_incompletude2 <- glue::glue("{dplyr::if_else(length(anos1_aux) > 0, 'Além disso, os', 'Os')} <span style = 'font-weight: 700'>óbitos maternos</span> apresentam problemas de investigação nos anos de <span style = 'font-weight: 700'> {anos2}.
-           </span> Nesses anos, a porcentagem de óbitos não investigados dessa população foi, respectivamente, de <span style = 'font-weight: 700'> {valores_incompletude2}. </span>
+           </span> Nesses anos, a porcentagem de óbitos investigados dessa população foi, respectivamente, de <span style = 'font-weight: 700'> {valores_incompletude2}. </span>
            São considerados como valores ideais aqueles iguais a 100%.")
       } else if (bloco == "deslocamento") {
         texto_incompletude2 <- glue::glue("{dplyr::if_else(length(anos1_aux) > 0, 'Além disso, as', 'As')} Declarações de Nascidos Vivos apresentam problemas de <span style = 'font-weight: 700'>validade do CNES</span> nos anos de <span style = 'font-weight: 700'> {anos2}.
@@ -367,7 +366,7 @@ cria_modal_incompletude <- function(df, incompletude1, variavel_incompletude1 = 
     } else if (length(anos2_aux) == 1) {
       if (bloco == "bloco6") {
         texto_incompletude2 <- glue::glue("{dplyr::if_else(length(anos1_aux) > 0, 'Além disso, os', 'Os')} <span style = 'font-weight: 700'>óbitos maternos</span> apresentam problemas de investigação no ano de <span style = 'font-weight: 700'> {anos2_aux}.
-           </span> Nesse ano, a porcentagem de óbitos não investigados dessa população foi de <span style = 'font-weight: 700'> {val_incomp2_aux}%. </span>
+           </span> Nesse ano, a porcentagem de óbitos investigados dessa população foi de <span style = 'font-weight: 700'> {val_incomp2_aux}%. </span>
            São considerados como valores ideais aqueles iguais a 100%.")
       } else if (bloco == "deslocamento") {
         texto_incompletude2 <-  glue::glue("{dplyr::if_else(length(anos1_aux) > 0, 'Além disso, as', 'As')} Declarações de Nascidos Vivos apresentam problemas de <span style = 'font-weight: 700'>validade do CNES</span> no ano de <span style = 'font-weight: 700'> {anos2_aux}.
