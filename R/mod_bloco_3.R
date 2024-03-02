@@ -264,7 +264,7 @@ mod_bloco_3_server <- function(id, filtros){
       }
     })
 
-    data_resumo1 <- reactive({
+    data_resumo <- reactive({
       bloco3 |>
         dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
         dplyr::filter(
@@ -314,80 +314,14 @@ mod_bloco_3_server <- function(id, filtros){
             }
           }
         ) |>
-        dplyr::summarise(total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-                         porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_sc = round(sum(casos_sc)/total_de_nascidos_vivos*1000, 1)
+        dplyr::summarise(
+          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
+          porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal) / total_de_nascidos_vivos * 100, 1),
+          porc_sc = round(sum(casos_sc) / total_de_nascidos_vivos * 1000, 1),
+          porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal[ano >= 2014]) / total_de_nascidos_vivos * 100, 1),
+          porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal[ano >= 2014]) / total_de_nascidos_vivos * 100, 1)
         ) |>
         dplyr::ungroup()
-    })
-
-    data_resumo2 <- reactive({
-      bloco3 |>
-        dplyr::filter(ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]) |>
-        dplyr::filter(
-          if (filtros()$comparar == "Não") {
-            if (filtros()$nivel == "Nacional")
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            else if (filtros()$nivel == "Regional")
-              regiao == filtros()$regiao
-            else if (filtros()$nivel == "Estadual")
-              uf == filtros()$estado
-            else if (filtros()$nivel == "Macrorregião de saúde")
-              macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-            else if(filtros()$nivel == "Microrregião de saúde")
-              r_saude == filtros()$micro & uf == filtros()$estado_micro
-            else if(filtros()$nivel == "Municipal")
-              municipio == filtros()$municipio & uf == filtros()$estado_municipio
-          } else {
-            req(input$localidade_resumo)
-            if (input$localidade_resumo == "escolha1") {
-              if (filtros()$nivel == "Nacional")
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            } else {
-              if (filtros()$nivel2 == "Nacional")
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-              else if (filtros()$nivel2 == "Regional")
-                regiao == filtros()$regiao2
-              else if (filtros()$nivel2 == "Estadual")
-                uf == filtros()$estado2
-              else if (filtros()$nivel2 == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro2 & uf == filtros()$estado_macro2
-              else if(filtros()$nivel2 == "Microrregião de saúde")
-                r_saude == filtros()$micro2 & uf == filtros()$estado_micro2
-              else if(filtros()$nivel2 == "Municipal")
-                municipio == filtros()$municipio2 & uf == filtros()$estado_municipio2
-              else if (filtros()$nivel2 == "Municípios semelhantes")
-                grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
-            }
-          }
-        ) |>
-        dplyr::summarise(total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-                         porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal)/total_de_nascidos_vivos*100, 1)
-        ) |>
-        dplyr::ungroup()
-    })
-
-    output$texto3 <- renderUI({
-      HTML(
-        paste(
-          "<b> % de mulheres com assistência pré-natal </b>", data_resumo2()$porc_1con,
-          "<b> % de mulheres com início precoce do pré-natal </b>", data_resumo1()$porc_inicio_prec,
-          "<b> % de mulheres com 7 ou mais consultas pré-natal </b>", data_resumo2()$porc_7,
-          "<b> Incidência de sífilis congênita por mil nascidos vivos </b>", data_resumo1()$porc_sc,
-          sep = '<br/>'
-        )
-      )
     })
 
 
@@ -415,52 +349,21 @@ mod_bloco_3_server <- function(id, filtros){
             municipio == filtros()$municipio & uf == filtros()$estado_municipio
         ) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-                         porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_sc = round(sum(casos_sc)/total_de_nascidos_vivos*1000, 1),
-                         class = dplyr::case_when(
-                           filtros()$nivel == "Nacional" ~ "Brasil",
-                           filtros()$nivel == "Regional" ~ filtros()$regiao,
-                           filtros()$nivel == "Estadual" ~ filtros()$estado,
-                           filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                           filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                           filtros()$nivel == "Municipal" ~ filtros()$municipio
-                         )) |>
-        dplyr::ungroup()
-    })
-
-    data3_2 <- reactive({
-      bloco3 |>
-        dplyr::filter(ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]) |>
-        #if(filtros()$nivel == "Estadual") dplyr::filter(uf==filtros()$estado)
-        dplyr::filter(
-          if (filtros()$nivel == "Nacional")
-            ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-          else if (filtros()$nivel == "Regional")
-            regiao == filtros()$regiao
-          else if (filtros()$nivel == "Estadual")
-            uf == filtros()$estado
-          else if (filtros()$nivel == "Macrorregião de saúde")
-            macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-          else if(filtros()$nivel == "Microrregião de saúde")
-            r_saude == filtros()$micro & uf == filtros()$estado_micro
-          else if(filtros()$nivel == "Municipal")
-            municipio == filtros()$municipio & uf == filtros()$estado_municipio
+        dplyr::summarise(
+          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
+          porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal) / total_de_nascidos_vivos * 100, 1),
+          porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal) / total_de_nascidos_vivos * 100, 1),
+          porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal) / total_de_nascidos_vivos * 100, 1),
+          porc_sc = round(sum(casos_sc) / total_de_nascidos_vivos * 1000, 1),
+          class = dplyr::case_when(
+            filtros()$nivel == "Nacional" ~ "Brasil",
+            filtros()$nivel == "Regional" ~ filtros()$regiao,
+            filtros()$nivel == "Estadual" ~ filtros()$estado,
+            filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
+            filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
+            filtros()$nivel == "Municipal" ~ filtros()$municipio
+          )
         ) |>
-        dplyr::group_by(ano) |>
-        dplyr::summarise(total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-                         porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal)/total_de_nascidos_vivos*100, 1),
-                         class = dplyr::case_when(
-                           filtros()$nivel == "Nacional" ~ "Brasil",
-                           filtros()$nivel == "Regional" ~ filtros()$regiao,
-                           filtros()$nivel == "Estadual" ~ filtros()$estado,
-                           filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                           filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                           filtros()$nivel == "Municipal" ~ filtros()$municipio
-                         )) |>
         dplyr::ungroup()
     })
 
@@ -608,22 +511,13 @@ mod_bloco_3_server <- function(id, filtros){
         dplyr::summarise(
           porc_inicio_prec = 95,
           porc_sc = 0.5,
-          class = "Referência"
-        ) |>
-        dplyr::ungroup()
-    })
-
-    data_referencia2 <- reactive({
-      bloco3 |>
-        dplyr::filter(ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]) |>
-        dplyr::group_by(ano) |>
-        dplyr::summarise(
           porc_1con = 95,
           porc_7 = 95,
           class = "Referência"
         ) |>
         dplyr::ungroup()
     })
+
 
     #dados do local selecionado para a comparação
     data3_comp <- reactive({
@@ -646,58 +540,24 @@ mod_bloco_3_server <- function(id, filtros){
             grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
         ) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-                         porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_sc = round(sum(casos_sc)/total_de_nascidos_vivos*1000, 1),
-                         class = dplyr::case_when(
-                           filtros()$nivel2 == "Nacional" ~ "Brasil",
-                           filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-                           filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-                           filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-                           filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-                           filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-                           filtros()$nivel2 == "Municípios semelhantes" ~ "Média dos municípios semelhantes"
-                         )) |>
-        dplyr::ungroup()
-    })
-
-    data3_2_comp <- reactive({
-      bloco3 |>
-        dplyr::filter(ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]) |>
-        dplyr::filter(
-          if (filtros()$nivel2 == "Nacional")
-            ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-          else if (filtros()$nivel2 == "Regional")
-            regiao == filtros()$regiao2
-          else if (filtros()$nivel2 == "Estadual")
-            uf == filtros()$estado2
-          else if (filtros()$nivel2 == "Macrorregião de saúde")
-            macro_r_saude == filtros()$macro2 & uf == filtros()$estado_macro2
-          else if(filtros()$nivel2 == "Microrregião de saúde")
-            r_saude == filtros()$micro2 & uf == filtros()$estado_micro2
-          else if(filtros()$nivel2 == "Municipal")
-            municipio == filtros()$municipio2 & uf == filtros()$estado_municipio2
-          else if (filtros()$nivel2 == "Municípios semelhantes")
-            grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
+        dplyr::summarise(
+          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
+          porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal) / total_de_nascidos_vivos * 100, 1),
+          porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal) / total_de_nascidos_vivos * 100, 1),
+          porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal) / total_de_nascidos_vivos * 100, 1),
+          porc_sc = round(sum(casos_sc) / total_de_nascidos_vivos * 1000, 1),
+          class = dplyr::case_when(
+            filtros()$nivel2 == "Nacional" ~ "Brasil",
+            filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
+            filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
+            filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
+            filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
+            filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
+            filtros()$nivel2 == "Municípios semelhantes" ~ "Média dos municípios semelhantes"
+          )
         ) |>
-        dplyr::group_by(ano) |>
-        dplyr::summarise(total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-                         porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal)/total_de_nascidos_vivos*100, 1),
-                         porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal)/total_de_nascidos_vivos*100, 1),
-                         class = dplyr::case_when(
-                           filtros()$nivel2 == "Nacional" ~ "Brasil",
-                           filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-                           filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-                           filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-                           filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-                           filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-                           filtros()$nivel2 == "Municípios semelhantes" ~ "Média dos municípios semelhantes"
-                         )) |>
         dplyr::ungroup()
     })
-
 
     #nome da localidade para os gráficos sem comparações
     local <- reactive({
@@ -722,12 +582,12 @@ mod_bloco_3_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         highcharter::highchart() |>
           highcharter::hc_add_series(
-            data = data3_2(),
+            data = data3() |> dplyr::filter(ano >= 2014),
             type = "line",
             highcharter::hcaes(x = ano, y = porc_1con, group = class, colour = class)
           ) |>
           highcharter::hc_add_series(
-            data = data_referencia2(),
+            data = data_referencia() |> dplyr::filter(ano >= 2014),
             type = "line",
             name = "Referência (recomendações OMS)",
             highcharter::hcaes(x = ano, y = porc_1con, group = class, colour = class),
@@ -735,23 +595,23 @@ mod_bloco_3_server <- function(id, filtros){
             opacity = 0.8
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
           highcharter::hc_colors(cols)
       } else {
         grafico_base <- highcharter::highchart() |>
           highcharter::hc_add_series(
-            data = data3_2(),
+            data = data3() |> dplyr::filter(ano >= 2014),
             type = "line",
             highcharter::hcaes(x = ano, y = porc_1con, group = class, colour = class)
           ) |>
           highcharter::hc_add_series(
-            data = data3_2_comp(),
+            data = data3_comp() |> dplyr::filter(ano >= 2014),
             type = "line",
             highcharter::hcaes(x = ano, y = porc_1con, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
           highcharter::hc_colors(cols)
        if (filtros()$mostrar_referencia == "nao_mostrar_referencia") {
@@ -759,7 +619,7 @@ mod_bloco_3_server <- function(id, filtros){
        } else {
          grafico_base |>
            highcharter::hc_add_series(
-             data = data_referencia2(),
+             data = data_referencia() |> dplyr::filter(ano >= 2014),
              type = "line",
              name = "Referência (recomendações OMS)",
              highcharter::hcaes(x = ano, y = porc_1con, group = class, colour = class),
@@ -789,7 +649,7 @@ mod_bloco_3_server <- function(id, filtros){
             opacity = 0.8
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
           highcharter::hc_colors(cols)
       } else {
@@ -805,7 +665,7 @@ mod_bloco_3_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = porc_inicio_prec, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
           highcharter::hc_colors(cols)
         if (filtros()$mostrar_referencia == "nao_mostrar_referencia") {
@@ -835,12 +695,12 @@ mod_bloco_3_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         highcharter::highchart() |>
           highcharter::hc_add_series(
-            data = data3_2(),
+            data = data3() |> dplyr::filter(ano >= 2014),
             type = "line",
             highcharter::hcaes(x = ano, y = porc_7, group = class, colour = class)
           ) |>
           highcharter::hc_add_series(
-            data = data_referencia2(),
+            data = data_referencia() |> dplyr::filter(ano >= 2014),
             type = "line",
             name = "Referência (recomendações OMS)",
             highcharter::hcaes(x = ano, y = porc_7, group = class, colour = class),
@@ -848,30 +708,30 @@ mod_bloco_3_server <- function(id, filtros){
             opacity = 0.8
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
           highcharter::hc_colors(cols)
       } else {
         grafico_base <- highcharter::highchart() |>
           highcharter::hc_add_series(
-            data = data3_2(),
+            data = data3() |> dplyr::filter(ano >= 2014),
             type = "line",
             highcharter::hcaes(x = ano, y = porc_7, group = class, colour = class)
           ) |>
           highcharter::hc_add_series(
-            data = data3_2_comp(),
+            data = data3_comp() |> dplyr::filter(ano >= 2014),
             type = "line",
             highcharter::hcaes(x = ano, y = porc_7, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
           highcharter::hc_colors(cols)
         if (filtros()$mostrar_referencia == "nao_mostrar_referencia") {
           grafico_base
         } else {
           grafico_base |> highcharter::hc_add_series(
-            data = data_referencia2(),
+            data = data_referencia() |> dplyr::filter(ano >= 2014),
             type = "line",
             name = "Referência (recomendações OMS)",
             highcharter::hcaes(x = ano, y = porc_7, group = class, colour = class),
@@ -900,7 +760,7 @@ mod_bloco_3_server <- function(id, filtros){
             opacity = 0.8
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "Taxa"), min = 0) |>
           highcharter::hc_colors(cols)
       } else {
@@ -916,7 +776,7 @@ mod_bloco_3_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = porc_sc, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "Taxa"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$mostrar_referencia == "nao_mostrar_referencia") {
@@ -936,7 +796,7 @@ mod_bloco_3_server <- function(id, filtros){
 
     output$b3_i1 <- renderUI({
       cria_caixa_server(
-        dados = data_resumo2(),
+        dados = data_resumo(),
         indicador = "porc_1con",
         titulo = "Cobertura de assistência pré-natal",
         tem_meta = TRUE,
@@ -960,7 +820,7 @@ mod_bloco_3_server <- function(id, filtros){
 
     output$b3_i2 <- renderUI({
       cria_caixa_server(
-        dados = data_resumo1(),
+        dados = data_resumo(),
         indicador = "porc_inicio_prec",
         titulo = "Porcentagem de mulheres com início precoce do pré-natal (até 12 semanas de gestação)",
         tem_meta = TRUE,
@@ -985,7 +845,7 @@ mod_bloco_3_server <- function(id, filtros){
 
     output$b3_i3 <- renderUI({
       cria_caixa_server(
-        dados = data_resumo2(),
+        dados = data_resumo(),
         indicador = "porc_7",
         titulo = "Porcentagem de mulheres com mais de sete consultas de pré-natal",
         tem_meta = TRUE,
@@ -1009,7 +869,7 @@ mod_bloco_3_server <- function(id, filtros){
 
     output$b3_i4 <- renderUI({
       cria_caixa_server(
-        dados = data_resumo1(),
+        dados = data_resumo(),
         indicador = "porc_sc",
         titulo = "Incidência de sífilis congênita por mil nascidos vivos",
         tem_meta = TRUE,

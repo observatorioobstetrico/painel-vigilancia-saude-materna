@@ -600,10 +600,7 @@ mod_bloco_4_ui <- function(id){
                     )
                   ),
                   hr(),
-                  div(
-                    style = "height: 90%; overflow-y: auto;",
-                    shinycssloaders::withSpinner(uiOutput(ns("infos_deslocamento_muni")))
-                  )
+                  shinycssloaders::withSpinner(uiOutput(ns("infos_deslocamento_muni")))
                 )
               )
             ),
@@ -2074,7 +2071,7 @@ mod_bloco_4_server <- function(id, filtros){
             ) |>
             highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
             highcharter::hc_title(text = HTML(glue::glue("<b style='font-size:16px'> {x} </b>"))) |>
-            highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+            highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
             highcharter::hc_yAxis(title = list(text = "% de nascidos vivos por cesariana"), min = 0, max = 100)
 
         } else if (filtros()$comparar == "Sim") {
@@ -2094,7 +2091,7 @@ mod_bloco_4_server <- function(id, filtros){
             ) |>
             highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
             highcharter::hc_title(text = HTML(glue::glue("<b style='font-size:16px'> {x} </b>"))) |>
-            highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+            highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
             highcharter::hc_yAxis(title = list(text = "% de nascidos vivos por cesariana"), min = 0, max = 100)
         }
 
@@ -2314,7 +2311,7 @@ mod_bloco_4_server <- function(id, filtros){
         ) |>
         highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
         highcharter::hc_colors(viridis::magma(10, direction = -1)[-c(1, 10)]) |>
-        highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+        highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
         highcharter::hc_yAxis(title = list(text = "% de nascidos vivos"), min = 0, max = 100)
 
 
@@ -2406,7 +2403,7 @@ mod_bloco_4_server <- function(id, filtros){
         ) |>
         highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
         highcharter::hc_colors(viridis::magma(10, direction = -1)[-c(1, 10)]) |>
-        highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+        highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
         highcharter::hc_yAxis(title = list(text = "Contribuição % para a taxa global de cesarianas"), min = 0, max = 100)
 
 
@@ -2462,7 +2459,7 @@ mod_bloco_4_server <- function(id, filtros){
           ) |>
           highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
           highcharter::hc_colors(viridis::magma(7, direction = -1)[-c(1, 7)]) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "% de nascidos vivos"), min = 0, max = 100) #|>
         #highcharter::hc_legend(width = 400, itemWidth = 200, align = "center", itemStyle = list(width = 250))
       },
@@ -2520,7 +2517,7 @@ mod_bloco_4_server <- function(id, filtros){
           ) |>
           highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
           highcharter::hc_colors(viridis::magma(7, direction = -1)[-c(1, 7)]) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "Contribuição % para a taxa global de cesarianas"), min = 0, max = 100)
       },
       error = function(e) {}
@@ -2555,7 +2552,7 @@ mod_bloco_4_server <- function(id, filtros){
             index = 3
           ) |>
           highcharter::hc_tooltip(valueSuffix = " km", shared = TRUE, sort = TRUE, valueDecimals = 2) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "km"), min = 0) |>
           #highcharter::hc_add_theme(highcharter::hc_theme_elementary()) |>
           highcharter::hc_colors(cols)
@@ -2592,7 +2589,7 @@ mod_bloco_4_server <- function(id, filtros){
             index = 3
           ) |>
           highcharter::hc_tooltip(valueSuffix = " km", shared = TRUE, sort = TRUE, valueDecimals = 2) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "km"), min = 0) |>
           #highcharter::hc_add_theme(highcharter::hc_theme_elementary()) |>
           highcharter::hc_colors(cols)
@@ -2629,7 +2626,7 @@ mod_bloco_4_server <- function(id, filtros){
             index = 3
           ) |>
           highcharter::hc_tooltip(valueSuffix = " km", shared = TRUE, sort = TRUE, valueDecimals = 2) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "km"), min = 0) |>
           #highcharter::hc_add_theme(highcharter::hc_theme_elementary()) |>
           highcharter::hc_colors(cols)
@@ -2642,13 +2639,24 @@ mod_bloco_4_server <- function(id, filtros){
       if (filtros()$nivel == "Municipal") {
         municipio1 <- municipio2 <- municipio3 <- NULL
 
-        for (i in 1:length(filtros()$ano2[1]:filtros()$ano2[2])) {
-          municipio1[i] <- tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc1[i])]
-          #uf_municipio_1[i] <- tabela_aux_municipios$uf[which(tabela_aux_municipios$codmunres == data4_deslocamento$codmunnasc1[i])]
-          municipio2[i] <- tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc2[i])]
-          #uf_municipio_2[i] <- tabela_aux_municipios$uf[which(tabela_aux_municipios$codmunres == data4_deslocamento$codmunnasc2[i])]
-          municipio3[i] <- tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc3[i])]
-          #uf_municipio_3[i] <- tabela_aux_municipios$uf[which(tabela_aux_municipios$codmunres == data4_deslocamento$codmunnasc3[i])]
+        for (i in 1:length(filtros()$ano2[1]:min(2020, filtros()$ano2[2]))) {
+          municipio1[i] <- ifelse(
+            is.na(data4_deslocamento()$codmunnasc1[i]),
+            NA,
+            tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc1[i])]
+          )
+
+          municipio2[i] <- ifelse(
+            is.na(data4_deslocamento()$codmunnasc2[i]),
+            NA,
+            tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc2[i])]
+          )
+
+          municipio3[i] <- ifelse(
+            is.na(data4_deslocamento()$codmunnasc3[i]),
+            NA,
+            tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc3[i])]
+          )
 
         }
 
@@ -2659,7 +2667,7 @@ mod_bloco_4_server <- function(id, filtros){
         estabelecimento <- data4_deslocamento()$nome_estabelecimento_fantasia
         partos_estabelecimento <- data4_deslocamento()$nasc_estab
 
-        ano <- filtros()$ano2[1]:filtros()$ano2[2]
+        ano <- filtros()$ano2[1]:min(2020, filtros()$ano2[2])
         infos_municipio1 <- dplyr::if_else(
           glue::glue("{municipio1} ({formatC(partos_municipio1, big.mark = '.', decimal.mark = ',')}%)") == "NA (NA%)",
           glue::glue("---"),
@@ -2711,14 +2719,15 @@ mod_bloco_4_server <- function(id, filtros){
             highlight = TRUE,
             striped = TRUE,
             borderless = TRUE,
-            pagination = FALSE
+            pagination = FALSE,
+            height = 610
           )
       }
     })
 
     data4_deslocamento_resumo <- reactive({
       bloco4_deslocamento_muni |>
-        dplyr::filter(ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]) |>
+        dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
         dplyr::filter(
           if (filtros()$comparar == "Não") {
             if (filtros()$nivel == "Nacional")

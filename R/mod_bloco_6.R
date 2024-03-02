@@ -484,7 +484,7 @@ mod_bloco_6_server <- function(id, filtros){
     ns <- session$ns
 
 
-  # Códigos compartilhados para os dois blocos ------------------------------
+    # Códigos compartilhados para os dois blocos ------------------------------
 
     ##### Criando o output que recebe a localidade e o ano escolhidos #####
     output$titulo_localidade <- renderUI({
@@ -606,15 +606,15 @@ mod_bloco_6_server <- function(id, filtros){
           prop_obitos_hipertens = round(sum(obitos_mat_hipertensao)/sum(obitos_mat_diretos) * 100, 1),
           prop_obitos_hemo = round(sum(obitos_mat_hemorragia)/sum(obitos_mat_diretos) * 100, 1),
           prop_obitos_infec = round(sum(obitos_mat_infec_puerperal)/sum(obitos_mat_diretos) * 100, 1),
-          casos_mmg = sum(casos_mmg),
-          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes) * 100, 1),
-          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao)/casos_mmg * 100, 1),
-          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia)/casos_mmg * 100, 1),
-          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes)/casos_mmg * 100, 1),
-          prop_mmg_uti = round(sum(casos_mmg_uti)/casos_mmg * 100, 1),
-          prop_mmg_tmp = round(sum(casos_mmg_tmp)/casos_mmg * 100, 1),
-          prop_mmg_transfusao = round(sum(casos_mmg_transfusao)/casos_mmg * 100, 1),
-          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia)/casos_mmg * 100, 1),
+          casos_mmg = sum(casos_mmg[ano <= 2020]),
+          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes[ano <= 2020]) * 100, 1),
+          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_uti = round(sum(casos_mmg_uti[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_tmp = round(sum(casos_mmg_tmp[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_transfusao = round(sum(casos_mmg_transfusao[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia[ano <= 2020])/casos_mmg * 100, 1),
           localidade = dplyr::case_when(
             nivel_selecionado() == "Nacional" ~ "Brasil",
             nivel_selecionado() == "Regional" ~ filtros()[[paste0("regiao", sufixo_inputs)]],
@@ -641,15 +641,15 @@ mod_bloco_6_server <- function(id, filtros){
           prop_obitos_hipertens = round(sum(obitos_mat_hipertensao)/sum(obitos_mat_diretos) * 100, 1),
           prop_obitos_hemo = round(sum(obitos_mat_hemorragia)/sum(obitos_mat_diretos) * 100, 1),
           prop_obitos_infec = round(sum(obitos_mat_infec_puerperal)/sum(obitos_mat_diretos) * 100, 1),
-          casos_mmg = sum(casos_mmg),
-          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes) * 100, 1),
-          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao)/casos_mmg * 100, 1),
-          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia)/casos_mmg * 100, 1),
-          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes)/casos_mmg * 100, 1),
-          prop_mmg_uti = round(sum(casos_mmg_uti)/casos_mmg * 100, 1),
-          prop_mmg_tmp = round(sum(casos_mmg_tmp)/casos_mmg * 100, 1),
-          prop_mmg_transfusao = round(sum(casos_mmg_transfusao)/casos_mmg * 100, 1),
-          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia)/casos_mmg * 100, 1)
+          casos_mmg = sum(casos_mmg[ano <= 2020]),
+          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes[ano <= 2020]) * 100, 1),
+          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_uti = round(sum(casos_mmg_uti[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_tmp = round(sum(casos_mmg_tmp[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_transfusao = round(sum(casos_mmg_transfusao[ano <= 2020])/casos_mmg * 100, 1),
+          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia[ano <= 2020])/casos_mmg * 100, 1)
         ) |>
         dplyr::ungroup()
     })
@@ -960,7 +960,7 @@ mod_bloco_6_server <- function(id, filtros){
 
 
 
-  # Para os indicadores de mortalidade materna ------------------------------
+    # Para os indicadores de mortalidade materna ------------------------------
 
     ##### Criando o input para selecionar a localidade do resumo quando há comparação #####
     output$input_localidade_resumo_mort <- renderUI({
@@ -998,9 +998,243 @@ mod_bloco_6_server <- function(id, filtros){
       }
     })
 
+    # ##### Calculando a RMM corrigida para o resumo do período #####
+    #    data6_resumo_fator_de_correcao <- reactive({
+    #      if (filtros()$comparar == "Não") {
+    #        sufixo_inputs <- ""
+    #      } else {
+    #        if (input$tabset1 == "tabpanel_mortalidade") {
+    #          req(input$localidade_resumo_mort)
+    #          if (input$localidade_resumo_mort == "escolha1") {
+    #            sufixo_inputs <- ""
+    #          } else {
+    #            sufixo_inputs <- "2"
+    #          }
+    #        } else {
+    #          req(input$localidade_resumo_morb)
+    #          if (input$localidade_resumo_morb == "escolha1") {
+    #            sufixo_inputs <- ""
+    #          } else {
+    #            sufixo_inputs <- "2"
+    #          }
+    #        }
+    #      }
+    #      if (nivel_selecionado() %in% c("Estadual", "Regional", "Nacional")) {
+    #        if (nivel_selecionado() == "Estadual") {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == filtros()[[paste0("estado", sufixo_inputs)]],
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            ) |>
+    #            dplyr::group_by(localidade) |>
+    #            dplyr::summarise(
+    #              fator_de_correcao = mean(fator_de_correcao)
+    #            )
+    #        } else if (nivel_selecionado() == "Regional") {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == filtros()[[paste0("regiao", sufixo_inputs)]],
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            ) |>
+    #            dplyr::group_by(localidade) |>
+    #            dplyr::summarise(
+    #              fator_de_correcao = mean(fator_de_correcao)
+    #            )
+    #        } else {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == "Brasil",
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            ) |>
+    #            dplyr::group_by(localidade) |>
+    #            dplyr::summarise(
+    #              fator_de_correcao = mean(fator_de_correcao)
+    #            )
+    #        }
+    #      } else {
+    #        data.frame(
+    #          fator_de_correcao = 1,
+    #          localidade = dplyr::case_when(
+    #            nivel_selecionado() == "Nacional" ~ "Brasil",
+    #            nivel_selecionado() == "Regional" ~ filtros()[[paste0("regiao", sufixo_inputs)]],
+    #            nivel_selecionado() == "Estadual" ~ filtros()[[paste0("estado", sufixo_inputs)]],
+    #            nivel_selecionado() == "Macrorregião de saúde" ~ filtros()[[paste0("macro", sufixo_inputs)]],
+    #            nivel_selecionado() == "Microrregião de saúde" ~ filtros()[[paste0("micro", sufixo_inputs)]],
+    #            nivel_selecionado() == "Municipal" ~ filtros()[[paste0("municipio", sufixo_inputs)]]
+    #         )
+    #        )
+    #      }
+    #
+    #    })
+    #
+    #    data6_resumo_rmm_corrigida <- reactive({
+    #      dplyr::left_join(data6_resumo(), rmm_corrigida, by = c("localidade")) |>
+    #        dplyr::mutate(
+    #          rmm = round(rmm*fator_de_correcao, 1)
+    #        )
+    #    })
+    #
+    #
+    #    ##### Calculando a RMM corrigida para os gráficos #####
+    #    data6_fator_de_correcao <- reactive({
+    #      if (filtros()$nivel %in% c("Estadual", "Regional", "Nacional")) {
+    #        if (filtros()$nivel == "Estadual") {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == filtros()$estado,
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            )
+    #        } else if (filtros()$nivel == "Regional") {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == filtros()$regiao,
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            )
+    #        } else {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == "Brasil",
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            )
+    #        }
+    #      } else {
+    #        data.frame(
+    #          ano = filtros()$ano2[1]:filtros()$ano2[2],
+    #          fator_de_correcao = rep(1, length(filtros()$ano2[1]:filtros()$ano2[2]))
+    #        )
+    #      }
+    #    })
+    #
+    #    data6_fator_de_correcao_comp <- reactive({
+    #      if (filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")) {
+    #        if (filtros()$nivel2 == "Estadual") {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == filtros()$estado,
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            )
+    #        } else if (filtros()$nivel2 == "Regional") {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == filtros()$regiao,
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            )
+    #        } else {
+    #          rmm_fator_de_correcao |>
+    #            dplyr::filter(
+    #              localidade == "Brasil",
+    #              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+    #            )
+    #        }
+    #      } else {
+    #        data.frame(
+    #          ano = filtros()$ano2[1]:filtros()$ano2[2],
+    #          fator_de_correcao = rep(1, length(filtros()$ano2[1]:filtros()$ano2[2]))
+    #        )
+    #      }
+    #    })
+    #
+    #    data6_rmm_corrigida <- reactive({
+    #      dplyr::full_join(data6(), data6_fator_de_correcao(), by = "ano") |>
+    #        dplyr::mutate(
+    #          fator_de_correcao = ifelse(ano < 2021, fator_de_correcao, data6_fator_de_correcao()$fator_de_correcao[which(data6_fator_de_correcao()$ano == 2020)]),
+    #          rmm = round(rmm*fator_de_correcao, 1)
+    #        )
+    #    })
+    #
+    #    data6_comp_rmm_corrigida <- reactive({
+    #      dplyr::full_join(data6_comp(), data6_fator_de_correcao_comp(), by = "ano") |>
+    #        dplyr::mutate(
+    #          fator_de_correcao = ifelse(ano < 2021, fator_de_correcao, data6_fator_de_correcao_comp()$fator_de_correcao[which(data6_fator_de_correcao_comp()$ano == 2020)]),
+    #          rmm = round(rmm*fator_de_correcao, 1)
+    #        )
+    #    })
 
-    ##### Calculando a RMM corrigida para o resumo do período #####
-    data6_resumo_fator_de_correcao <- reactive({
+    ########## Calculando as RMM com correção
+
+    data6_correcao_rmm <- reactive({
+      if(filtros()$nivel %in% c("Estadual", "Regional", "Nacional")){
+        if(filtros()$nivel == "Estadual"){
+          rmm_corrigida |>
+            dplyr::filter(
+              localidade == filtros()$estado,
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+            )
+        } else if(filtros()$nivel == "Regional"){
+          rmm_corrigida |>
+            dplyr::filter(
+              localidade == filtros()$regiao,
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+            )
+        } else if(filtros()$nivel=="Nacional"){
+          rmm_corrigida |>
+            dplyr::filter(
+              localidade == "Brasil",
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+            )
+        }
+      }
+      else{
+        data.frame(ano = filtros()$ano2[1]:filtros()$ano2[2])
+      }
+    })
+
+    data6_rmm_corrigida <- reactive({
+      if(filtros()$nivel %in% c("Estadual", "Regional", "Nacional")){
+        dplyr::full_join(data6(), data6_correcao_rmm(), by= "ano") |>
+          dplyr::mutate(
+            rmm_c=RMM
+          )
+      } else{
+        dplyr::full_join(data6(), data6_correcao_rmm(), by= "ano") |>
+          dplyr::mutate(
+            rmm_c=rmm
+          )
+      }
+    })
+
+    data6_comp_correcao_rmm <- reactive({
+      if(filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")){
+        if(filtros()$nivel2 == "Estadual"){
+          rmm_corrigida |>
+            dplyr::filter(
+              localidade == filtros()$estado,
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+            )
+        } else if(filtros()$nivel2 == "Regional"){
+          rmm_corrigida |>
+            dplyr::filter(
+              localidade == filtros()$regiao,
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+            )
+        } else if(filtros()$nivel2=="Nacional"){
+          rmm_corrigida |>
+            dplyr::filter(
+              localidade == "Brasil",
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+            )
+        }
+      }
+      else{
+        data.frame(ano = filtros()$ano2[1]:filtros()$ano2[2])
+      }
+    })
+
+    data6_comp_rmm_corrigida <- reactive({
+      if(filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")){
+        dplyr::full_join(data6_comp(), data6_comp_correcao_rmm(), by= "ano") |>
+          dplyr::mutate(
+            rmm_c=RMM
+          )
+      } else{
+        dplyr::full_join(data6_comp(), data6_comp_correcao_rmm(), by= "ano") |>
+          dplyr::mutate(
+            rmm_c=rmm
+          )
+      }
+    })
+
+    data6_resumo_correcao_rmm <- reactive({
       if (filtros()$comparar == "Não") {
         sufixo_inputs <- ""
       } else {
@@ -1020,41 +1254,42 @@ mod_bloco_6_server <- function(id, filtros){
           }
         }
       }
-      if (nivel_selecionado() %in% c("Estadual", "Regional", "Nacional")) {
-        if (nivel_selecionado() == "Estadual") {
-          rmm_fator_de_correcao |>
+
+      if(filtros()$nivel %in% c("Estadual", "Regional", "Nacional")){
+        if(filtros()$nivel == "Estadual"){
+          rmm_corrigida |>
             dplyr::filter(
-              localidade == filtros()[[paste0("estado", sufixo_inputs)]],
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+              localidade == filtros()$estado,
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021
             ) |>
             dplyr::group_by(localidade) |>
             dplyr::summarise(
-              fator_de_correcao = mean(fator_de_correcao)
+              RMM_C = mean(RMM)
             )
-        } else if (nivel_selecionado() == "Regional") {
-          rmm_fator_de_correcao |>
+        } else if(filtros()$nivel == "Regional"){
+          rmm_corrigida |>
             dplyr::filter(
-              localidade == filtros()[[paste0("regiao", sufixo_inputs)]],
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+              localidade == filtros()$regiao,
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021
             ) |>
             dplyr::group_by(localidade) |>
             dplyr::summarise(
-              fator_de_correcao = mean(fator_de_correcao)
+              RMM_C = mean(RMM)
             )
-        } else {
-          rmm_fator_de_correcao |>
+        } else if(filtros()$nivel=="Nacional"){
+          rmm_corrigida |>
             dplyr::filter(
               localidade == "Brasil",
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021
             ) |>
             dplyr::group_by(localidade) |>
             dplyr::summarise(
-              fator_de_correcao = mean(fator_de_correcao)
+              RMM_C = mean(RMM)
             )
         }
-      } else {
+      }
+      else{
         data.frame(
-          fator_de_correcao = 1,
           localidade = dplyr::case_when(
             nivel_selecionado() == "Nacional" ~ "Brasil",
             nivel_selecionado() == "Regional" ~ filtros()[[paste0("regiao", sufixo_inputs)]],
@@ -1065,88 +1300,18 @@ mod_bloco_6_server <- function(id, filtros){
           )
         )
       }
-
     })
 
     data6_resumo_rmm_corrigida <- reactive({
-      dplyr::full_join(data6_resumo(), data6_resumo_fator_de_correcao(), by = "localidade") |>
-        dplyr::mutate(
-          rmm = round(rmm*fator_de_correcao, 1)
-        )
-    })
-
-
-    ##### Calculando a RMM corrigida para os gráficos #####
-    data6_fator_de_correcao <- reactive({
       if (filtros()$nivel %in% c("Estadual", "Regional", "Nacional")) {
-        if (filtros()$nivel == "Estadual") {
-          rmm_fator_de_correcao |>
-            dplyr::filter(
-              localidade == filtros()$estado,
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            )
-        } else if (filtros()$nivel == "Regional") {
-          rmm_fator_de_correcao |>
-            dplyr::filter(
-              localidade == filtros()$regiao,
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            )
-        } else {
-          rmm_fator_de_correcao |>
-            dplyr::filter(
-              localidade == "Brasil",
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            )
-        }
+        result <- dplyr::full_join(data6_resumo(), data6_resumo_correcao_rmm(), by = "localidade") |>
+          dplyr::mutate(rmm_c = RMM_C)
       } else {
-        data.frame(
-          ano = filtros()$ano2[1]:filtros()$ano2[2],
-          fator_de_correcao = rep(1, length(filtros()$ano2[1]:filtros()$ano2[2]))
-        )
+        result <- dplyr::full_join(data6_resumo(), data6_resumo_correcao_rmm(), by = "localidade") |>
+          dplyr::mutate(rmm_c = rmm)
       }
-    })
 
-    data6_fator_de_correcao_comp <- reactive({
-      if (filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")) {
-        if (filtros()$nivel2 == "Estadual") {
-          rmm_fator_de_correcao |>
-            dplyr::filter(
-              localidade == filtros()$estado,
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            )
-        } else if (filtros()$nivel2 == "Regional") {
-          rmm_fator_de_correcao |>
-            dplyr::filter(
-              localidade == filtros()$regiao,
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            )
-        } else {
-          rmm_fator_de_correcao |>
-            dplyr::filter(
-              localidade == "Brasil",
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            )
-        }
-      } else {
-        data.frame(
-          ano = filtros()$ano2[1]:filtros()$ano2[2],
-          fator_de_correcao = rep(1, length(filtros()$ano2[1]:filtros()$ano2[2]))
-        )
-      }
-    })
-
-    data6_rmm_corrigida <- reactive({
-      dplyr::full_join(data6(), data6_fator_de_correcao(), by = "ano") |>
-        dplyr::mutate(
-          rmm = round(rmm*fator_de_correcao, 1)
-        )
-    })
-
-    data6_comp_rmm_corrigida <- reactive({
-      dplyr::full_join(data6_comp(), data6_fator_de_correcao_comp(), by = "ano") |>
-        dplyr::mutate(
-          rmm = round(rmm*fator_de_correcao, 1)
-        )
+      return(result)
     })
 
 
@@ -1176,7 +1341,7 @@ mod_bloco_6_server <- function(id, filtros){
     output$caixa_b6_mort_i2 <- renderUI({
       cria_caixa_server(
         dados = data6_resumo_rmm_corrigida(),
-        indicador = "rmm",
+        indicador = "rmm_c",
         titulo = "Razão de mortalidade materna por 100.000 nascidos vivos",
         tem_meta = TRUE,
         valor_de_referencia = data6_resumo_referencia()$rmm,
@@ -1302,7 +1467,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = obitos_mat_totais, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "Número de óbitos maternos"), min = 0) |>
           highcharter::hc_colors(cols)
       } else {
@@ -1318,7 +1483,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = obitos_mat_totais, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "Número de óbitos maternos"), min = 0) |>
           highcharter::hc_colors(cols)
       }
@@ -1333,10 +1498,11 @@ mod_bloco_6_server <- function(id, filtros){
             data = data6_rmm_corrigida(),
             type = "line",
             name = dplyr::if_else(filtros()$nivel == "Nacional", "Brasil", unique(data6()$class)),
-            highcharter::hcaes(x = ano, y = rmm, group = class, colour = class)
+            highcharter::hcaes(x = ano, y = rmm_c,
+                               group = class, colour = class)
           ) |>
           highcharter::hc_add_series(
-            data = data6_referencia(),
+            data = data6_referencia() |> dplyr::filter(ano <= ifelse(filtros()$nivel %in% c("Nacional", "Estadual", "Regional"), 2021, 2022)),
             type = "line",
             name = "Referência (meta ODS)",
             highcharter::hcaes(x = ano, y = rmm, group = class, colour = class),
@@ -1344,7 +1510,7 @@ mod_bloco_6_server <- function(id, filtros){
             opacity = 0.8
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "Óbitos maternos por 100 mil nascidos vivos"), min = 0) |>
           highcharter::hc_colors(cols)
       } else {
@@ -1353,23 +1519,23 @@ mod_bloco_6_server <- function(id, filtros){
             data = data6_rmm_corrigida(),
             type = "line",
             name = dplyr::if_else(filtros()$nivel == "Nacional", "Brasil", unique(data6()$class)),
-            highcharter::hcaes(x = ano, y = rmm, group = class, colour = class)
+            highcharter::hcaes(x = ano, y = rmm_c, group = class, colour = class)
           ) |>
           highcharter::hc_add_series(
             data = data6_comp_rmm_corrigida(),
             type = "line",
             name = dplyr::if_else(filtros()$nivel2 == "Nacional", "Brasil", unique(data6_comp()$class)),
-            highcharter::hcaes(x = ano, y = rmm, group = class, colour = class)
+            highcharter::hcaes(x = ano, y = rmm_c, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "Óbitos maternos por 100 mil nascidos vivos"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$mostrar_referencia == "nao_mostrar_referencia") {
           grafico_base
         } else {
           grafico_base |> highcharter::hc_add_series(
-            data = data6_referencia(),
+            data = data6_referencia() |> dplyr::filter(ano <= ifelse(filtros()$nivel %in% c("Nacional", "Estadual", "Regional"), 2021, 2022)),
             type = "line",
             name = "Referência (meta ODS)",
             highcharter::hcaes(x = ano, y = rmm, group = class, colour = class),
@@ -1398,7 +1564,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_obitos_diretos, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$nivel == "Nacional") {
@@ -1433,7 +1599,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_obitos_diretos, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (any(c(filtros()$nivel, filtros()$nivel2) == "Nacional") | (filtros()$mostrar_referencia == "nao_mostrar_referencia")) {
@@ -1490,7 +1656,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = eixo_y, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$nivel == "Nacional") {
@@ -1525,7 +1691,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = eixo_y, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (any(c(filtros()$nivel, filtros()$nivel2) == "Nacional") | (filtros()$mostrar_referencia == "nao_mostrar_referencia")) {
@@ -1546,7 +1712,7 @@ mod_bloco_6_server <- function(id, filtros){
 
 
 
-  # Para os indicadores de morbidade materna grave --------------------------------
+    # Para os indicadores de morbidade materna grave --------------------------------
 
     ##### Criando o input para selecionar a localidade do resumo quando há comparação #####
     output$input_localidade_resumo_morb <- renderUI({
@@ -1715,7 +1881,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_int_publicas, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$nivel == "Nacional") {
@@ -1744,7 +1910,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_int_publicas, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (any(c(filtros()$nivel, filtros()$nivel2) == "Nacional") | (filtros()$mostrar_referencia == "nao_mostrar_referencia")) {
@@ -1800,7 +1966,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = eixo_y2, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$nivel == "Nacional") {
@@ -1835,7 +2001,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = eixo_y2, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (any(c(filtros()$nivel, filtros()$nivel2) == "Nacional") | (filtros()$mostrar_referencia == "nao_mostrar_referencia")) {
@@ -1870,7 +2036,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_uti, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$nivel == "Nacional") {
@@ -1903,7 +2069,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_uti, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (any(c(filtros()$nivel, filtros()$nivel2) == "Nacional") | (filtros()$mostrar_referencia == "nao_mostrar_referencia")) {
@@ -1937,7 +2103,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_tmp, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$nivel == "Nacional") {
@@ -1970,7 +2136,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_tmp, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (any(c(filtros()$nivel, filtros()$nivel2) == "Nacional") | (filtros()$mostrar_referencia == "nao_mostrar_referencia")) {
@@ -2004,7 +2170,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_transfusao, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$nivel == "Nacional") {
@@ -2037,7 +2203,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_transfusao, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (any(c(filtros()$nivel, filtros()$nivel2) == "Nacional") | (filtros()$mostrar_referencia == "nao_mostrar_referencia")) {
@@ -2071,7 +2237,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_cirurgia, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (filtros()$nivel == "Nacional") {
@@ -2104,7 +2270,7 @@ mod_bloco_6_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = prop_mmg_cirurgia, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_colors(cols)
         if (any(c(filtros()$nivel, filtros()$nivel2) == "Nacional") | (filtros()$mostrar_referencia == "nao_mostrar_referencia")) {
@@ -2133,3 +2299,4 @@ mod_bloco_6_server <- function(id, filtros){
 
 ## To be copied in the server
 # mod_bloco_6_server("bloco_6_1")
+

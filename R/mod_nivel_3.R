@@ -279,16 +279,56 @@ mod_nivel_3_server <- function(id, filtros){
     ##### Criando o vetor que recebe os indicadores que só estão disponíveis a partir de 2013
     indicadores_sem_2013 <- c(
       "tx_abortos_mil_mulheres_valor_medio",
+      "sus_tx_abortos_mil_mulheres_valor_medio",
+      "ans_tx_abortos_mil_mulheres_valor_medio",
       "tx_abortos_cem_nascidos_vivos_valor_medio",
+      "sus_tx_abortos_cem_nascidos_vivos_valor_medio",
+      "ans_tx_abortos_cem_nascidos_vivos_valor_medio",
       "cobertura_pre_natal",
       "porc_7",
       tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco4"][-1]
     )
 
+    indicadores_2015 <- tabela_indicadores$nome_abreviado[grep("abortos", tabela_indicadores$nome_abreviado)]
+
+    indicadores_2014 <- c(
+      "cobertura_pre_natal",
+      "porc_7",
+      tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco4"][-1]
+    )
+
+    indicadores_2020 <- c(
+      "porc_cobertura_esf",
+      tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco6_morbidade"]
+    )
+
+    indicadores_2022 <- reactive({
+      indicadores_2022_aux <-
+      if (filtros()$nivel %in% c("Nacional", "Estadual", "Regional")) {
+        c(
+          "porc_dependentes_sus",
+          "porc_menor20",
+          tabela_indicadores$nome_abreviado[grep("tx_abortos_mil", tabela_indicadores$nome_abreviado)],
+          "sus_tx_abortos_cem_nascidos_vivos_valor_medio",
+          "ans_tx_abortos_cem_nascidos_vivos_valor_medio",
+          tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco4_deslocamento"],
+          "rmm"
+        )
+      } else {
+        c(
+          "porc_dependentes_sus",
+          "porc_menor20",
+          tabela_indicadores$nome_abreviado[grep("tx_abortos_mil", tabela_indicadores$nome_abreviado)],
+          "sus_tx_abortos_cem_nascidos_vivos_valor_medio",
+          "ans_tx_abortos_cem_nascidos_vivos_valor_medio",
+          tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco4_deslocamento"]
+        )
+      }
+    })
 
     output$gauge1 <- renderUI({
       #if (infos_indicador()$num_indicadores_incompletude == 0 & !(infos_indicador()$nome_abreviado %in% c("tx_abortos_cem_nascidos_vivos_valor_medio", "porc_sc"))) {
-      if (infos_indicador()$num_indicadores_incompletude == 0 & !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio", "porc_sc"))) {
+      if (infos_indicador()$num_indicadores_incompletude == 0 & !(infos_indicador()$nome_abreviado %in% c(indicadores_sem_2013[1:6], "porc_sc"))) {
         if (infos_indicador()$nome_abreviado == "porc_dependentes_sus") {
           div(
             style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
@@ -308,7 +348,7 @@ mod_nivel_3_server <- function(id, filtros){
             do IBGE, que se tornam mais imprecisas quando o período intercensitário é maior."
             )
           )
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
+        } else if (grepl("tx_abortos_mil_mulheres_valor_medio", infos_indicador()$nome_abreviado)) {
         div(
           style = "text-align: center; height: 260px; display: flex; align-items:center; justify-content:center; text-align: center;",
           HTML(
@@ -335,7 +375,7 @@ mod_nivel_3_server <- function(id, filtros){
             anos_incompletude <- data_grafico_incompletude1()$ano[which(data_grafico_incompletude1()$proporcao < 90)]
           }
           anos_cobertura <- data_cobertura()$ano[which(data_cobertura()$cobertura < 90)]
-          valor <- round(length(unique(c(anos_incompletude, anos_cobertura)))/length(filtros()$ano2[1]:filtros()$ano2[2]) * 100)
+          valor <- round(length(unique(c(anos_incompletude, anos_cobertura)))/length(anos_disponiveis()) * 100)
         } else if (infos_indicador()$num_indicadores_incompletude == 2) {
           if (infos_indicador()$bloco != "bloco6") {
             anos_incompletude1 <- data_grafico_incompletude1()$ano[which(data_grafico_incompletude1()$proporcao > 5)]
@@ -345,10 +385,10 @@ mod_nivel_3_server <- function(id, filtros){
             anos_incompletude2 <- data_grafico_incompletude2()$ano[which(data_grafico_incompletude2()$proporcao < 100)]
           }
           anos_cobertura <- data_cobertura()$ano[which(data_cobertura()$cobertura < 90)]
-          valor <- round(length(unique(c(anos_incompletude1, anos_incompletude2, anos_cobertura)))/length(filtros()$ano2[1]:filtros()$ano2[2]) * 100)
+          valor <- round(length(unique(c(anos_incompletude1, anos_incompletude2, anos_cobertura)))/length(anos_disponiveis()) * 100)
         } else {
           anos_cobertura <- data_cobertura()$ano[which(data_cobertura()$cobertura < 90)]
-          valor <- round(length(anos_cobertura)/length(filtros()$ano2[1]:filtros()$ano2[2]) * 100)
+          valor <- round(length(anos_cobertura)/length(anos_disponiveis()) * 100)
         }
 
         div(
@@ -439,6 +479,24 @@ mod_nivel_3_server <- function(id, filtros){
           dplyr::filter(indicador == filtros()$indicador_blocos4_6)
       }
 
+    })
+
+    anos_disponiveis <- reactive({
+      if (infos_indicador()$nome_abreviado %in% indicadores_2014) {
+        anos_disponiveis_aux <- max(2014, filtros()$ano2[1]):filtros()$ano2[2]
+      } else if (infos_indicador()$nome_abreviado %in% indicadores_2015) {
+        anos_disponiveis_aux <- max(2015, filtros()$ano2[1]):filtros()$ano2[2]
+      } else {
+        anos_disponiveis_aux <- filtros()$ano2[1]:filtros()$ano2[2]
+      }
+      # if (infos_indicador()$nome_abreviado %in% indicadores_2020) {
+      #   anos_disponiveis_aux[anos_disponiveis_aux <= 2020]
+      # } else if (infos_indicador()$nome_abreviado %in% indicadores_2022) {
+      #   anos_disponiveis_aux[anos_disponiveis_aux < 2022]
+      # } else {
+      #   anos_disponiveis_aux
+      # }
+      anos_disponiveis_aux
     })
 
     output$nome_abreviado <- renderText(infos_indicador()$nome_abreviado)
@@ -612,218 +670,97 @@ mod_nivel_3_server <- function(id, filtros){
     ##### Dados de incompletude para o indicador selecionado #####
     data_grafico_incompletude1 <- reactive({
       if (infos_indicador()$num_indicadores_incompletude != 0) {
-        if (infos_indicador()$nome_abreviado %in% indicadores_sem_2013) {
-          base_incompletude <- base_incompletude |>
-            dplyr::filter(
-              ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
+        base_incompletude |>
+          dplyr::filter(
+            ano %in% anos_disponiveis(),
+            if (filtros()$nivel == "Nacional")
+              regiao %in% unique(tabela_aux_municipios$regiao)
+            else if (filtros()$nivel == "Regional")
+              regiao == filtros()$regiao
+            else if (filtros()$nivel == "Estadual")
+              uf == filtros()$estado
+            else if (filtros()$nivel == "Macrorregião de saúde")
+              macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
+            else if(filtros()$nivel == "Microrregião de saúde")
+              r_saude == filtros()$micro & uf == filtros()$estado_micro
+            else if(filtros()$nivel == "Municipal")
+              municipio == filtros()$municipio & uf == filtros()$estado_municipio
+          ) |>
+          dplyr::group_by(ano) |>
+          dplyr::summarise(
+            numerador := ifelse(
+              !(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento")),
+              sum(.data[[infos_indicador()$numerador_incompletude1]], na.rm = TRUE),
+              NA
+            ),
+            denominador := ifelse(
+              !(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento")),
+              sum(.data[[infos_indicador()$denominador_incompletude1]], na.rm = TRUE),
+              NA
+            ),
+            proporcao = dplyr::case_when(
+              !(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento")) ~ round(numerador/denominador * {infos_indicador()$fator_incompletude}, 2),
+              infos_indicador()$bloco == "bloco6" ~ round((sum(obito_mif_investigado_com_ficha_sintese, na.rm = TRUE) + sum(obito_mif_investigado_sem_ficha_sintese, na.rm = TRUE))/sum(total_obitos_mulher_idade_fertil, na.rm = TRUE) * 100, 2),
+              infos_indicador()$bloco == "bloco4_deslocamento" ~ round((sum(dn_hospital_id_fertil, na.rm = TRUE)-sum(dn_hosp_id_fertil_cnes_preenchido, na.rm = TRUE))/sum(dn_hospital_id_fertil, na.rm = TRUE) * 100, 2)
+            ),
+            localidade = dplyr::case_when(
+              filtros()$nivel == "Nacional" ~ "Brasil",
+              filtros()$nivel == "Regional" ~ filtros()$regiao,
+              filtros()$nivel == "Estadual" ~ filtros()$estado,
+              filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
+              filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
+              filtros()$nivel == "Municipal" ~ filtros()$municipio
             )
-        } else {
-          base_incompletude <- base_incompletude |>
-            dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            )
-        }
-        if (!(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento"))) {
-          base_incompletude |>
-            dplyr::filter(
-              if (filtros()$nivel == "Nacional")
-                regiao %in% unique(tabela_aux_municipios$regiao)
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := sum(.data[[infos_indicador()$numerador_incompletude1]], na.rm = TRUE),
-              denominador := sum(.data[[infos_indicador()$denominador_incompletude1]], na.rm = TRUE),
-              proporcao = round(numerador/denominador * {infos_indicador()$fator_incompletude}, 2),
-              localidade = dplyr::case_when(
-                filtros()$nivel == "Nacional" ~ "Brasil",
-                filtros()$nivel == "Regional" ~ filtros()$regiao,
-                filtros()$nivel == "Estadual" ~ filtros()$estado,
-                filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                filtros()$nivel == "Municipal" ~ filtros()$municipio
-              )
-            ) |>
-            dplyr::ungroup()
-        } else {
-          if (infos_indicador()$bloco == "bloco6") {
-            base_incompletude |>
-              dplyr::filter(
-                if (filtros()$nivel == "Nacional")
-                  regiao %in% unique(tabela_aux_municipios$regiao)
-                else if (filtros()$nivel == "Regional")
-                  regiao == filtros()$regiao
-                else if (filtros()$nivel == "Estadual")
-                  uf == filtros()$estado
-                else if (filtros()$nivel == "Macrorregião de saúde")
-                  macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-                else if(filtros()$nivel == "Microrregião de saúde")
-                  r_saude == filtros()$micro & uf == filtros()$estado_micro
-                else if(filtros()$nivel == "Municipal")
-                  municipio == filtros()$municipio & uf == filtros()$estado_municipio
-              ) |>
-              dplyr::group_by(ano) |>
-              dplyr::summarise(
-                proporcao = round((sum(obito_mif_investigado_com_ficha_sintese, na.rm = TRUE) + sum(obito_mif_investigado_sem_ficha_sintese, na.rm = TRUE))/sum(total_obitos_mulher_idade_fertil, na.rm = TRUE) * 100, 2),
-                localidade = dplyr::case_when(
-                  filtros()$nivel == "Nacional" ~ "Brasil",
-                  filtros()$nivel == "Regional" ~ filtros()$regiao,
-                  filtros()$nivel == "Estadual" ~ filtros()$estado,
-                  filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                  filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                  filtros()$nivel == "Municipal" ~ filtros()$municipio
-                )
-              ) |>
-              dplyr::ungroup()
-          } else if (infos_indicador()$bloco == "bloco4_deslocamento") {
-            base_incompletude |>
-              dplyr::filter(
-                if (filtros()$nivel == "Nacional")
-                  regiao %in% unique(tabela_aux_municipios$regiao)
-                else if (filtros()$nivel == "Regional")
-                  regiao == filtros()$regiao
-                else if (filtros()$nivel == "Estadual")
-                  uf == filtros()$estado
-                else if (filtros()$nivel == "Macrorregião de saúde")
-                  macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-                else if(filtros()$nivel == "Microrregião de saúde")
-                  r_saude == filtros()$micro & uf == filtros()$estado_micro
-                else if(filtros()$nivel == "Municipal")
-                  municipio == filtros()$municipio & uf == filtros()$estado_municipio
-              ) |>
-              dplyr::group_by(ano) |>
-              dplyr::summarise(
-                proporcao = round((sum(dn_hospital_id_fertil, na.rm = TRUE)-sum(dn_hosp_id_fertil_cnes_preenchido, na.rm = TRUE))/sum(dn_hospital_id_fertil, na.rm = TRUE) * 100, 2),
-                localidade = dplyr::case_when(
-                  filtros()$nivel == "Nacional" ~ "Brasil",
-                  filtros()$nivel == "Regional" ~ filtros()$regiao,
-                  filtros()$nivel == "Estadual" ~ filtros()$estado,
-                  filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                  filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                  filtros()$nivel == "Municipal" ~ filtros()$municipio
-                )
-              ) |>
-              dplyr::ungroup()
-          }
-        }
+          ) |>
+          dplyr::ungroup()
       }
     })
 
     data_grafico_incompletude2 <- reactive({
       if (infos_indicador()$num_indicadores_incompletude == 2) {
-        if (infos_indicador()$nome_abreviado %in% indicadores_sem_2013) {
-          base_incompletude <- base_incompletude |>
-            dplyr::filter(
-              ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
+        base_incompletude |>
+          dplyr::filter(
+            ano %in% anos_disponiveis(),
+            if (filtros()$nivel == "Nacional")
+              regiao %in% unique(tabela_aux_municipios$regiao)
+            else if (filtros()$nivel == "Regional")
+              regiao == filtros()$regiao
+            else if (filtros()$nivel == "Estadual")
+              uf == filtros()$estado
+            else if (filtros()$nivel == "Macrorregião de saúde")
+              macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
+            else if(filtros()$nivel == "Microrregião de saúde")
+              r_saude == filtros()$micro & uf == filtros()$estado_micro
+            else if(filtros()$nivel == "Municipal")
+              municipio == filtros()$municipio & uf == filtros()$estado_municipio
+          ) |>
+          dplyr::group_by(ano) |>
+          dplyr::summarise(
+            numerador := ifelse(
+              !(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento")),
+              sum(.data[[infos_indicador()$numerador_incompletude2]], na.rm = TRUE),
+              NA
+            ),
+            denominador := ifelse(
+              !(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento")),
+              sum(.data[[infos_indicador()$denominador_incompletude2]], na.rm = TRUE),
+              NA
+            ),
+            proporcao = dplyr::case_when(
+              !(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento")) ~ round(numerador/denominador * {infos_indicador()$fator_incompletude}, 2),
+              infos_indicador()$bloco == "bloco6" ~ round((sum(obito_materno_investigado_com_ficha_sintese, na.rm = TRUE) + sum(obito_materno_investigado_sem_ficha_sintese, na.rm = TRUE))/sum(total_obitos_maternos, na.rm = TRUE) * 100, 2),
+              infos_indicador()$bloco == "bloco4_deslocamento" ~ round((sum(dn_hospital_id_fertil, na.rm = TRUE)-sum(dn_hosp_id_fertil_cnes_valido, na.rm = TRUE))/sum(dn_hospital_id_fertil, na.rm = TRUE) * 100, 2)
+           ),
+           localidade = dplyr::case_when(
+              filtros()$nivel == "Nacional" ~ "Brasil",
+              filtros()$nivel == "Regional" ~ filtros()$regiao,
+              filtros()$nivel == "Estadual" ~ filtros()$estado,
+              filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
+              filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
+              filtros()$nivel == "Municipal" ~ filtros()$municipio
             )
-        } else {
-          base_incompletude <- base_incompletude |>
-            dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            )
-        }
-        if (!(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento"))) {
-          base_incompletude |>
-            dplyr::filter(
-              if (filtros()$nivel == "Nacional")
-                regiao %in% unique(tabela_aux_municipios$regiao)
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := sum(.data[[infos_indicador()$numerador_incompletude2]], na.rm = TRUE),
-              denominador := sum(.data[[infos_indicador()$denominador_incompletude2]], na.rm = TRUE),
-              proporcao = round(numerador/denominador * {infos_indicador()$fator_incompletude}, 2),
-              localidade = dplyr::case_when(
-                filtros()$nivel == "Nacional" ~ "Brasil",
-                filtros()$nivel == "Regional" ~ filtros()$regiao,
-                filtros()$nivel == "Estadual" ~ filtros()$estado,
-                filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                filtros()$nivel == "Municipal" ~ filtros()$municipio
-              )
-            ) |>
-            dplyr::ungroup()
-        } else {
-          if (infos_indicador()$bloco == "bloco6") {
-            base_incompletude |>
-              dplyr::filter(
-                if (filtros()$nivel == "Nacional")
-                  regiao %in% unique(tabela_aux_municipios$regiao)
-                else if (filtros()$nivel == "Regional")
-                  regiao == filtros()$regiao
-                else if (filtros()$nivel == "Estadual")
-                  uf == filtros()$estado
-                else if (filtros()$nivel == "Macrorregião de saúde")
-                  macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-                else if(filtros()$nivel == "Microrregião de saúde")
-                  r_saude == filtros()$micro & uf == filtros()$estado_micro
-                else if(filtros()$nivel == "Municipal")
-                  municipio == filtros()$municipio & uf == filtros()$estado_municipio
-              ) |>
-              dplyr::group_by(ano) |>
-              dplyr::summarise(
-                proporcao = round((sum(obito_materno_investigado_com_ficha_sintese, na.rm = TRUE) + sum(obito_materno_investigado_sem_ficha_sintese, na.rm = TRUE))/sum(total_obitos_maternos, na.rm = TRUE) * 100, 2),
-                localidade = dplyr::case_when(
-                  filtros()$nivel == "Nacional" ~ "Brasil",
-                  filtros()$nivel == "Regional" ~ filtros()$regiao,
-                  filtros()$nivel == "Estadual" ~ filtros()$estado,
-                  filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                  filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                  filtros()$nivel == "Municipal" ~ filtros()$municipio
-                )
-              ) |>
-              dplyr::ungroup()
-          } else if (infos_indicador()$bloco == "bloco4_deslocamento") {
-            base_incompletude |>
-              dplyr::filter(
-                if (filtros()$nivel == "Nacional")
-                  regiao %in% unique(tabela_aux_municipios$regiao)
-                else if (filtros()$nivel == "Regional")
-                  regiao == filtros()$regiao
-                else if (filtros()$nivel == "Estadual")
-                  uf == filtros()$estado
-                else if (filtros()$nivel == "Macrorregião de saúde")
-                  macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-                else if(filtros()$nivel == "Microrregião de saúde")
-                  r_saude == filtros()$micro & uf == filtros()$estado_micro
-                else if(filtros()$nivel == "Municipal")
-                  municipio == filtros()$municipio & uf == filtros()$estado_municipio
-              ) |>
-              dplyr::group_by(ano) |>
-              dplyr::summarise(
-                proporcao = round((sum(dn_hospital_id_fertil, na.rm = TRUE)-sum(dn_hosp_id_fertil_cnes_valido, na.rm = TRUE))/sum(dn_hospital_id_fertil, na.rm = TRUE) * 100, 2),
-                localidade = dplyr::case_when(
-                  filtros()$nivel == "Nacional" ~ "Brasil",
-                  filtros()$nivel == "Regional" ~ filtros()$regiao,
-                  filtros()$nivel == "Estadual" ~ filtros()$estado,
-                  filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                  filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                  filtros()$nivel == "Municipal" ~ filtros()$municipio
-                )
-              ) |>
-              dplyr::ungroup()
-          }
-
-        }
+          ) |>
+          dplyr::ungroup()
       }
 
     })
@@ -851,19 +788,19 @@ mod_nivel_3_server <- function(id, filtros){
       } else {
         if (!(infos_indicador()$bloco %in% c("bloco6"))) {
           data.frame(
-            ano = filtros()$ano2[1]:filtros()$ano2[2],
-            bom = rep(10, times = length(filtros()$ano2[1]:filtros()$ano2[2])),
-            excelente = rep(5, times = length(filtros()$ano2[1]:filtros()$ano2[2])),
-            class_bom = rep("Bom", times = length(filtros()$ano2[1]:filtros()$ano2[2])),
-            class_excelente = rep("Excelente", times = length(filtros()$ano2[1]:filtros()$ano2[2]))
+            ano = anos_disponiveis(),
+            bom = rep(10, times = length(anos_disponiveis())),
+            excelente = rep(5, times = length(anos_disponiveis())),
+            class_bom = rep("Bom", times = length(anos_disponiveis())),
+            class_excelente = rep("Excelente", times = length(anos_disponiveis()))
           )
         } else {
           if (infos_indicador()$bloco == "bloco6") {
             data.frame(
-              ano = filtros()$ano2[1]:filtros()$ano2[2],
-              ideal_mif = rep(90, times = length(filtros()$ano2[1]:filtros()$ano2[2])),
-              ideal_maternos = rep(100, times = length(filtros()$ano2[1]:filtros()$ano2[2])),
-              class = rep("Ideal", times = length(filtros()$ano2[1]:filtros()$ano2[2]))
+              ano = anos_disponiveis(),
+              ideal_mif = rep(90, times = length(anos_disponiveis())),
+              ideal_maternos = rep(100, times = length(anos_disponiveis())),
+              class = rep("Ideal", times = length(anos_disponiveis()))
             )
           }
         }
@@ -937,7 +874,7 @@ mod_nivel_3_server <- function(id, filtros){
         if (infos_indicador()$nome_abreviado == "porc_dependentes_sus") {
           bloco1 |>
             dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021 #tapa-buraco
             ) |>
             dplyr::group_by(regiao) |>
             dplyr::summarise(
@@ -950,7 +887,7 @@ mod_nivel_3_server <- function(id, filtros){
           #Fazer pro resto dos indicadores no vetor "indicadores_especiais"
           bloco1 |>
             dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020 #tapa-buraco
             ) |>
             dplyr::group_by(regiao) |>
             dplyr::summarise(
@@ -959,10 +896,11 @@ mod_nivel_3_server <- function(id, filtros){
               proporcao = round(numerador/denominador * 100, 1)
             ) |>
             dplyr::ungroup()
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
+        } else if (grepl("tx_abortos_mil_mulheres_valor_medio", infos_indicador()$nome_abreviado)) {
           bloco2 |>
             dplyr::filter(
-              ano >= max(filtros()$ano2[1], 2015) & ano <= filtros()$ano2[2]
+              #ano >= max(filtros()$ano2[1], 2015) & ano <= filtros()$ano2[2]
+              ano >= max(filtros()$ano2[1], 2015) & ano <= filtros()$ano2[2] & ano <= 2021 #tapa-buraco
             ) |>
             dplyr::group_by(regiao) |>
             dplyr::summarise(
@@ -971,7 +909,7 @@ mod_nivel_3_server <- function(id, filtros){
               proporcao = round(numerador/denominador * 1000, 1)
             ) |>
             dplyr::ungroup()
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio") {
+        } else if (grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado)) {
           bloco2 |>
             dplyr::filter(
               ano >= max(filtros()$ano2[1], 2015) & ano <= filtros()$ano2[2]
@@ -999,307 +937,91 @@ mod_nivel_3_server <- function(id, filtros){
       }
     })
 
-    ##### Dados para a construção do gráfico de linhas para o indicador selecionado #####
-    data_grafico_serie <- reactive({
-      if (!(infos_indicador()$nome_abreviado %in% indicadores_especiais)) {
-        if (infos_indicador()$bloco != "bloco4_deslocamento") {
-          get(filtros()$bloco) |>
-            dplyr::filter(
-              if (infos_indicador()$nome_abreviado %in% indicadores_sem_2013)
-                ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-              else
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            ) |>
-            dplyr::filter(
-              if (filtros()$nivel == "Nacional")
-                regiao %in% unique(tabela_aux_municipios$regiao)
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := sum(.data[[infos_indicador()$numerador]], na.rm = TRUE),
-              denominador := sum(.data[[infos_indicador()$denominador]], na.rm = TRUE),
-              proporcao = round(numerador/denominador * {infos_indicador()$fator}, 1),
-              class = dplyr::case_when(
-                filtros()$nivel == "Nacional" ~ "Brasil",
-                filtros()$nivel == "Regional" ~ filtros()$regiao,
-                filtros()$nivel == "Estadual" ~ filtros()$estado,
-                filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                filtros()$nivel == "Municipal" ~ filtros()$municipio
-              )
-            ) |>
-            dplyr::ungroup()
-        } else {
-          if (!base::startsWith(infos_indicador()$indicador, "Medianas")) {
-            if (filtros()$nivel != "Estadual") {
-              bloco4_deslocamento_muni |>
-                dplyr::filter(
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-                  if (filtros()$nivel == "Nacional")
-                    ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-                  else if (filtros()$nivel == "Regional")
-                    regiao == filtros()$regiao
-                  else if (filtros()$nivel == "Macrorregião de saúde")
-                    macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-                  else if(filtros()$nivel == "Microrregião de saúde")
-                    r_saude == filtros()$micro & uf == filtros()$estado_micro
-                  else if(filtros()$nivel == "Municipal")
-                    municipio == filtros()$municipio & uf == filtros()$estado_municipio
-                ) |>
-                dplyr::group_by(ano) |>
-                dplyr::summarise(
-                  numerador := sum(.data[[infos_indicador()$numerador]], na.rm = TRUE),
-                  denominador := sum(.data[[infos_indicador()$denominador]], na.rm = TRUE),
-                  proporcao = round(numerador/denominador * {infos_indicador()$fator}, 1),
-                  class = dplyr::case_when(
-                    filtros()$nivel == "Nacional" ~ "Brasil",
-                    filtros()$nivel == "Regional" ~ filtros()$regiao,
-                    filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                    filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                    filtros()$nivel == "Municipal" ~ filtros()$municipio
-                  )
-                ) |>
-                dplyr::ungroup()
-            } else {
-              bloco4_deslocamento_uf |>
-                dplyr::filter(
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-                  uf == filtros()$estado
-                ) |>
-                dplyr::group_by(ano) |>
-                dplyr::summarise(
-                  numerador := sum(.data[[infos_indicador()$numerador]], na.rm = TRUE),
-                  denominador := sum(.data[[infos_indicador()$denominador]], na.rm = TRUE),
-                  proporcao = round(numerador/denominador * {infos_indicador()$fator}, 1),
-                  class = filtros()$estado,
-                ) |>
-                dplyr::ungroup()
-            }
-          }
-        }
+    data_filtrada <- reactive({
+      if (infos_indicador()$bloco != "bloco4_deslocamento") {
+        data_filtrada_aux <- get(filtros()$bloco)
       } else {
-        if (infos_indicador()$nome_abreviado == "porc_dependentes_sus") {
-          bloco1 |>
-            dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-              if (filtros()$nivel == "Nacional")
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := sum(populacao_feminina_10_a_49, na.rm = TRUE) - sum(pop_fem_10_49_com_plano_saude, na.rm = TRUE),
-              denominador := sum(populacao_feminina_10_a_49, na.rm = TRUE),
-              proporcao = round(numerador/denominador * 100, 1),
-              class = dplyr::case_when(
-                filtros()$nivel == "Nacional" ~ "Brasil",
-                filtros()$nivel == "Regional" ~ filtros()$regiao,
-                filtros()$nivel == "Estadual" ~ filtros()$estado,
-                filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                filtros()$nivel == "Municipal" ~ filtros()$municipio
-              )
-            ) |>
-            dplyr::ungroup()
-        } else if (infos_indicador()$nome_abreviado == "porc_cobertura_esf") {
-          bloco1 |>
-            dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-              if (filtros()$nivel == "Nacional")
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := sum(media_cobertura_esf, na.rm = TRUE),
-              denominador := sum(populacao_total, na.rm = TRUE),
-              proporcao = round(numerador/denominador * 100, 1),
-              class = dplyr::case_when(
-                filtros()$nivel == "Nacional" ~ "Brasil",
-                filtros()$nivel == "Regional" ~ filtros()$regiao,
-                filtros()$nivel == "Estadual" ~ filtros()$estado,
-                filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                filtros()$nivel == "Municipal" ~ filtros()$municipio
-              )
-            ) |>
-            dplyr::ungroup()
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
-          bloco2 |>
-            dplyr::filter(
-              ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2],
-              if (filtros()$nivel == "Nacional")
-                ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              tx_abortos_mil_mulheres_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(pop_fem_10_49) * 1000, 1),
-              tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(pop_fem_10_49) * 1000, 1),
-              tx_abortos_mil_mulheres_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(pop_fem_10_49) * 1000, 1),
-              class = dplyr::case_when(
-                filtros()$nivel == "Nacional" ~ "Brasil",
-                filtros()$nivel == "Regional" ~ filtros()$regiao,
-                filtros()$nivel == "Estadual" ~ filtros()$estado,
-                filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                filtros()$nivel == "Municipal" ~ filtros()$municipio
-              )
-            ) |>
-            dplyr::ungroup()
-
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio") {
-          bloco2 |>
-            dplyr::filter(
-              ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2],
-              if (filtros()$nivel == "Nacional")
-                ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              tx_abortos_cem_nascidos_vivos_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
-              tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(total_de_nascidos_vivos) * 100, 1),
-              tx_abortos_cem_nascidos_vivos_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1),
-              class = dplyr::case_when(
-                filtros()$nivel == "Nacional" ~ "Brasil",
-                filtros()$nivel == "Regional" ~ filtros()$regiao,
-                filtros()$nivel == "Estadual" ~ filtros()$estado,
-                filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                filtros()$nivel == "Municipal" ~ filtros()$municipio
-              )
-            ) |>
-            dplyr::ungroup()
-
-        } else if (infos_indicador()$nome_abreviado == "obitos_mat_totais") {
-          bloco6 |>
-            dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-              if (filtros()$nivel == "Nacional")
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-              else if (filtros()$nivel == "Regional")
-                regiao == filtros()$regiao
-              else if (filtros()$nivel == "Estadual")
-                uf == filtros()$estado
-              else if (filtros()$nivel == "Macrorregião de saúde")
-                macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-              else if(filtros()$nivel == "Microrregião de saúde")
-                r_saude == filtros()$micro & uf == filtros()$estado_micro
-              else if(filtros()$nivel == "Municipal")
-                municipio == filtros()$municipio & uf == filtros()$estado_municipio
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := sum(obitos_mat_totais, na.rm = TRUE),
-              denominador := 1,
-              proporcao = round(numerador/denominador * 1, 1),
-              class = dplyr::case_when(
-                filtros()$nivel == "Nacional" ~ "Brasil",
-                filtros()$nivel == "Regional" ~ filtros()$regiao,
-                filtros()$nivel == "Estadual" ~ filtros()$estado,
-                filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                filtros()$nivel == "Municipal" ~ filtros()$municipio
-              )
-            ) |>
-            dplyr::ungroup()
-        } else if (startsWith(infos_indicador()$indicador, "Medianas")) {
-          if (filtros()$nivel != "Estadual") {
-            bloco4_deslocamento_muni |>
-              dplyr::filter(
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-                if (filtros()$nivel == "Nacional")
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-                else if (filtros()$nivel == "Regional")
-                  regiao == filtros()$regiao
-                else if (filtros()$nivel == "Macrorregião de saúde")
-                  macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-                else if(filtros()$nivel == "Microrregião de saúde")
-                  r_saude == filtros()$micro & uf == filtros()$estado_micro
-                else if(filtros()$nivel == "Municipal")
-                  municipio == filtros()$municipio & uf == filtros()$estado_municipio
-              ) |>
-              dplyr::group_by(ano) |>
-              dplyr::mutate(
-                km_total := .data[[infos_indicador()$nome_abreviado]],
-                km_baixa_complexidade := .data[[paste0(infos_indicador()$nome_abreviado, "_baixa_complexidade")]],
-                km_alta_complexidade := .data[[paste0(infos_indicador()$nome_abreviado, "_alta_complexidade")]],
-                class = dplyr::case_when(
-                  filtros()$nivel == "Nacional" ~ "Brasil",
-                  filtros()$nivel == "Regional" ~ filtros()$regiao,
-                  filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-                  filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-                  filtros()$nivel == "Municipal" ~ filtros()$municipio
-                )
-              ) |>
-              dplyr::ungroup()
-          } else {
-            bloco4_deslocamento_uf |>
-              dplyr::filter(
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-                uf == filtros()$estado
-              ) |>
-              dplyr::group_by(ano) |>
-              dplyr::mutate(
-                km_total := .data[[infos_indicador()$nome_abreviado]],
-                km_baixa_complexidade := .data[[paste0(infos_indicador()$nome_abreviado, "_baixa_complexidade")]],
-                km_alta_complexidade := .data[[paste0(infos_indicador()$nome_abreviado, "_alta_complexidade")]],
-                class = filtros()$estado
-              ) |>
-              dplyr::ungroup()
-          }
+        if (filtros()$nivel != "Estadual") {
+          data_filtrada_aux <- bloco4_deslocamento_muni
+        } else {
+          data_filtrada_aux <- bloco4_deslocamento_uf
         }
       }
-
+      data_filtrada_aux |>
+        dplyr::filter(
+          ano %in% anos_disponiveis(),
+          if (filtros()$nivel == "Nacional")
+            regiao %in% unique(tabela_aux_municipios$regiao)
+          else if (filtros()$nivel == "Regional")
+            regiao == filtros()$regiao
+          else if (filtros()$nivel == "Estadual")
+            uf == filtros()$estado
+          else if (filtros()$nivel == "Macrorregião de saúde")
+            macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
+          else if(filtros()$nivel == "Microrregião de saúde")
+            r_saude == filtros()$micro & uf == filtros()$estado_micro
+          else if(filtros()$nivel == "Municipal")
+            municipio == filtros()$municipio & uf == filtros()$estado_municipio
+        )
     })
 
+    ##### Dados para a construção do gráfico de linhas para o indicador selecionado #####
+    data_grafico_serie <- reactive({
+      data_filtrada() |>
+        dplyr::group_by(ano) |>
+        dplyr::summarise(
+          indicador = !!rlang::parse_expr(infos_indicador()$calculo),
+          tx_abortos_mil_mulheres_lim_inf = ifelse(
+            grepl("tx_abortos_mil_mulheres_valor_medio", infos_indicador()$nome_abreviado),
+            dplyr::case_when(
+              infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(pop_fem_10_49) * 1000, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_mil_mulheres_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) / sum(pop_fem_sus_10_49) * 1000, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_mil_mulheres_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5) / sum(pop_fem_ans_10_49) * 1000, 1),
+            ),
+            NA
+          ),
+          tx_abortos_mil_mulheres_lim_sup = ifelse(
+            grepl("tx_abortos_mil_mulheres_valor_medio", infos_indicador()$nome_abreviado),
+            dplyr::case_when(
+              infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(pop_fem_10_49) * 1000, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_mil_mulheres_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) / sum(pop_fem_sus_10_49) * 1000, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_mil_mulheres_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7) / sum(pop_fem_ans_10_49) * 1000, 1)
+            ),
+            NA
+          ),
+          tx_abortos_cem_nascidos_vivos_lim_inf = ifelse(
+            grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado),
+            dplyr::case_when(
+              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) / sum(total_de_nascidos_vivos_sus) * 100, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_ans) * 100, 1)
+            ),
+            NA
+          ),
+          tx_abortos_cem_nascidos_vivos_lim_sup = ifelse(
+            grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado),
+            dplyr::case_when(
+              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_sus) * 100, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7) / sum(total_de_nascidos_vivos_ans) * 100, 1)
+            ),
+            NA
+          ),
+          class = dplyr::case_when(
+            filtros()$nivel == "Nacional" ~ dplyr::if_else(
+              infos_indicador()$descricao_referencia == "média nacional",
+              "Brasil (valor de referência)",
+              "Brasil"
+            ),
+            filtros()$nivel == "Regional" ~ filtros()$regiao,
+            filtros()$nivel == "Estadual" ~ filtros()$estado,
+            filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
+            filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
+            filtros()$nivel == "Municipal" ~ filtros()$municipio
+          )
+        ) |>
+        dplyr::ungroup()
+    })
 
     data_fator_de_correcao <- reactive({
       if (infos_indicador()$nome_abreviado == "rmm") {
@@ -1325,8 +1047,8 @@ mod_nivel_3_server <- function(id, filtros){
           }
         } else {
           data.frame(
-            ano = filtros()$ano2[1]:filtros()$ano2[2],
-            fator_de_correcao = rep(1, length(filtros()$ano2[1]:filtros()$ano2[2]))
+            ano = anos_disponiveis(),
+            fator_de_correcao = rep(1, length(anos_disponiveis()))
           )
         }
       }
@@ -1345,150 +1067,70 @@ mod_nivel_3_server <- function(id, filtros){
             rmm = round(proporcao*fator_de_correcao, 1)
           )
       }
-
     })
+
 
     ##### Dados para a construção da linha de referência para o indicador selecionado #####
     data_referencia <- reactive({
-      if (!(infos_indicador()$nome_abreviado %in% indicadores_especiais)) {
-        if (infos_indicador()$bloco != "bloco4_deslocamento") {
-          if (infos_indicador()$referencia == "Nacional") {
-            get(filtros()$bloco) |>
-              dplyr::filter(
-                if (infos_indicador()$nome_abreviado %in% indicadores_sem_2013)
-                  ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-                else
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-              ) |>
-              dplyr::group_by(ano) |>
-              dplyr::summarise(
-                numerador := sum(.data[[infos_indicador()$numerador]], na.rm = TRUE),
-                denominador := sum(.data[[infos_indicador()$denominador]], na.rm = TRUE),
-                proporcao = round(numerador/denominador * {infos_indicador()$fator}, 1),
-                class = "Referência"
-              ) |>
-              dplyr::ungroup()
-          } else {
-            get(filtros()$bloco) |>
-              dplyr::filter(
-                if (infos_indicador()$nome_abreviado %in% indicadores_sem_2013)
-                  ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-                else
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-              ) |>
-              dplyr::group_by(ano) |>
-              dplyr::summarise(
-                proporcao = {as.numeric(infos_indicador()$referencia)},
-                class = "Referência"
-              ) |>
-              dplyr::ungroup()
-          }
-        } else {
-          if (!base::startsWith(infos_indicador()$indicador, "Medianas")) {
-            if (filtros()$nivel != "Estadual") {
-              bloco4_deslocamento_muni |>
-                dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
-                dplyr::group_by(ano) |>
-                dplyr::summarise(
-                  numerador := sum(.data[[infos_indicador()$numerador]], na.rm = TRUE),
-                  denominador := sum(.data[[infos_indicador()$denominador]], na.rm = TRUE),
-                  proporcao = round(numerador/denominador * {infos_indicador()$fator}, 1),
-                  class = "Referência"
-                ) |>
-                dplyr::ungroup()
-            } else {
-              bloco4_deslocamento_uf |>
-                dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
-                dplyr::group_by(ano) |>
-                dplyr::summarise(
-                  numerador := sum(.data[[infos_indicador()$numerador]], na.rm = TRUE),
-                  denominador := sum(.data[[infos_indicador()$denominador]], na.rm = TRUE),
-                  proporcao = round(numerador/denominador * {infos_indicador()$fator}, 1),
-                  class = "Referência"
-                ) |>
-                dplyr::ungroup()
-            }
-          }
-        }
-
+      if (infos_indicador()$bloco != "bloco4_deslocamento") {
+        data_referencia_aux <- get(filtros()$bloco)
       } else {
-        if (infos_indicador()$nome_abreviado == "porc_dependentes_sus") {
-          bloco1 |>
-            dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := sum(populacao_feminina_10_a_49, na.rm = TRUE) - sum(pop_fem_10_49_com_plano_saude, na.rm = TRUE),
-              denominador := sum(populacao_feminina_10_a_49, na.rm = TRUE),
-              proporcao = round(numerador/denominador * 100, 1),
-              class = "Referência (média nacional)"
-            ) |>
-            dplyr::ungroup()
-        } else if (infos_indicador()$nome_abreviado == "porc_cobertura_esf") {
-          bloco1 |>
-            dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := 95,
-              denominador := 100,
-              proporcao = round(numerador/denominador * 100, 1),
-              class = "Referência (meta ODS)"
-            ) |>
-            dplyr::ungroup()
-
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
-          bloco2 |>
-            dplyr::filter(
-              ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              tx_abortos_mil_mulheres_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(pop_fem_10_49) * 1000, 1),
-              tx_abortos_mil_mulheres_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(pop_fem_10_49) * 1000, 1),
-              tx_abortos_mil_mulheres_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(pop_fem_10_49) * 1000, 1),
-              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE) * 0.9) + (sum(abortos_sus_30_a_39, na.rm = TRUE) * 0.85) + (sum(abortos_sus_40_a_49, na.rm = TRUE) * 0.75)) * 4) + (((sum(abortos_ans_menor_30, na.rm = TRUE) * 0.9) + (sum(abortos_ans_30_a_39, na.rm = TRUE) * 0.85) + (sum(abortos_ans_40_a_49, na.rm = TRUE) * 0.75)) * 6)),
-              denominador := sum(pop_fem_10_49, na.rm = TRUE),
-              proporcao = round(numerador/denominador * 1000, 1),
-              class = "Referência (média nacional)"
-            ) |>
-            dplyr::ungroup()
-
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio") {
-          bloco2 |>
-            dplyr::filter(
-              ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              tx_abortos_cem_nascidos_vivos_lim_inf = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
-              tx_abortos_cem_nascidos_vivos_valor_medio = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)) / sum(total_de_nascidos_vivos) * 100, 1),
-              tx_abortos_cem_nascidos_vivos_lim_sup = round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1),
-              numerador := ((((sum(abortos_sus_menor_30, na.rm = TRUE) * 0.9) + (sum(abortos_sus_30_a_39, na.rm = TRUE) * 0.85) + (sum(abortos_sus_40_a_49, na.rm = TRUE) * 0.75)) * 4) + (((sum(abortos_ans_menor_30, na.rm = TRUE) * 0.9) + (sum(abortos_ans_30_a_39, na.rm = TRUE) * 0.85) + (sum(abortos_ans_40_a_49, na.rm = TRUE) * 0.75)) * 6)),
-              denominador := sum(total_de_nascidos_vivos, na.rm = TRUE),
-              proporcao = round(numerador/denominador * 100, 1),
-              class = "Referência (média nacional)"
-            ) |>
-            dplyr::ungroup()
-
-        } else if (infos_indicador()$nome_abreviado == "obitos_mat_totais") {
-          bloco6 |>
-            dplyr::filter(
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            ) |>
-            dplyr::group_by(ano) |>
-            dplyr::summarise(
-              numerador := sum(obitos_mat_totais, na.rm = TRUE),
-              denominador := 1,
-              proporcao = round(numerador/denominador * 1, 1),
-              class = "Referência (média nacional)"
-            ) |>
-            dplyr::ungroup()
-
+        if (filtros()$nivel != "Estadual") {
+          data_referencia_aux <- bloco4_deslocamento_muni
+        } else {
+          data_referencia_aux <- bloco4_deslocamento_uf
         }
       }
+      data_referencia_aux |>
+        dplyr::filter(
+          ano %in% anos_disponiveis()
+        ) |>
+        dplyr::group_by(ano) |>
+        dplyr::summarise(
+          indicador = ifelse(
+            infos_indicador()$referencia == "Nacional",
+            !!rlang::parse_expr(infos_indicador()$calculo),
+            {as.numeric(infos_indicador()$referencia)}
+          ),
+          tx_abortos_mil_mulheres_lim_inf = ifelse(
+            grepl("tx_abortos_mil_mulheres_valor_medio", infos_indicador()$nome_abreviado),
+            dplyr::case_when(
+              infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(pop_fem_10_49) * 1000, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_mil_mulheres_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) / sum(pop_fem_sus_10_49) * 1000, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_mil_mulheres_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5) / sum(pop_fem_ans_10_49) * 1000, 1),
+            ),
+            NA
+          ),
+          tx_abortos_mil_mulheres_lim_sup = ifelse(
+            grepl("tx_abortos_mil_mulheres_valor_medio", infos_indicador()$nome_abreviado),
+            dplyr::case_when(
+              infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(pop_fem_10_49) * 1000, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_mil_mulheres_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) / sum(pop_fem_sus_10_49) * 1000, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_mil_mulheres_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7) / sum(pop_fem_ans_10_49) * 1000, 1)
+            ),
+            NA
+          ),
+          tx_abortos_cem_nascidos_vivos_lim_inf = ifelse(
+            grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado),
+            dplyr::case_when(
+              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) / sum(total_de_nascidos_vivos_sus) * 100, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_ans) * 100, 1)
+            ),
+            NA
+          ),
+          tx_abortos_cem_nascidos_vivos_lim_sup = ifelse(
+            grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado),
+            dplyr::case_when(
+              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_sus) * 100, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7) / sum(total_de_nascidos_vivos_ans) * 100, 1)
+            ),
+            NA
+          ),
+          class = "Referência"
+        ) |>
+        dplyr::ungroup()
     })
 
     data_referencia_baixo_peso_aux <- reactive({
@@ -1517,14 +1159,14 @@ mod_nivel_3_server <- function(id, filtros){
 
     data_referencia_baixo_peso <- reactive({
       data.frame(
-        ano = filtros()$ano2[1]:filtros()$ano2[2],
+        ano = ano %in% anos_disponiveis(),
         porc_baixo_peso = data_referencia_baixo_peso_aux()$porc_baixo_peso,
         class = "Referência"
       )
     })
 
 
-    ##### Dados para a construção da tabela para o indicador selecionado (aqui você mexe) #####
+    ##### Dados para a construção da tabela para o indicador selecionado #####
     data_tabela1 <- eventReactive(c(input$opcoes_tab1, filtros()$pesquisar), {
       validate(
         need(
@@ -1556,7 +1198,9 @@ mod_nivel_3_server <- function(id, filtros){
           } else {
             if (filtros()$nivel != "Estadual") {
               bloco4_deslocamento_muni |>
-                dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
+                dplyr::filter(
+                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020 #tapa-buraco
+                ) |>
                 dplyr::group_by(uf, macro_r_saude, municipio) |>
                 dplyr::summarise(
                   numerador := sum(.data[[infos_indicador()$numerador]], na.rm = TRUE),
@@ -1570,7 +1214,9 @@ mod_nivel_3_server <- function(id, filtros){
                 dplyr::ungroup()
             } else {
               bloco4_deslocamento_uf |>
-                dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
+                dplyr::filter(
+                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020 #tapa-buraco
+                ) |>
                 dplyr::group_by(uf, macro_r_saude, municipio) |>
                 dplyr::summarise(
                   numerador := sum(.data[[infos_indicador()$numerador]], na.rm = TRUE),
@@ -1623,9 +1269,9 @@ mod_nivel_3_server <- function(id, filtros){
             if (filtros()$nivel != "Estadual") {
               bloco4_deslocamento_muni |>
                 dplyr::filter(
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
+                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020, #tapa-buraco
                   if (filtros()$nivel == "Nacional")
-                    ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+                    ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020 #tapa-buraco
                   else if (filtros()$nivel == "Regional")
                     regiao == filtros()$regiao
                   else if (filtros()$nivel == "Macrorregião de saúde")
@@ -1649,7 +1295,7 @@ mod_nivel_3_server <- function(id, filtros){
             } else {
               bloco4_deslocamento_uf |>
                 dplyr::filter(
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
+                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020, #tapa-buraco
                   uf == filtros()$estado
                 ) |>
                 dplyr::group_by(uf, macro_r_saude, municipio) |>
@@ -1671,7 +1317,7 @@ mod_nivel_3_server <- function(id, filtros){
           if (input$opcoes_tab1 == "escolha1") {
             bloco1 |>
               dplyr::filter(
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021 #tapa-buraco
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
@@ -1687,9 +1333,9 @@ mod_nivel_3_server <- function(id, filtros){
           } else {
             bloco1 |>
               dplyr::filter(
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
+                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021, #tapa-buraco
                 if (filtros()$nivel == "Nacional")
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021 #tapa-buraco
                 else if (filtros()$nivel == "Regional")
                   regiao == filtros()$regiao
                 else if (filtros()$nivel == "Estadual")
@@ -1717,7 +1363,7 @@ mod_nivel_3_server <- function(id, filtros){
           if (input$opcoes_tab1 == "escolha1") {
             bloco1 |>
               dplyr::filter(
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020 #tapa-buraco
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
@@ -1733,9 +1379,9 @@ mod_nivel_3_server <- function(id, filtros){
           } else {
             bloco1 |>
               dplyr::filter(
-                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
+                ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020, #tapa-buraco
                 if (filtros()$nivel == "Nacional")
-                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+                  ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2020 #tapa-buraco
                 else if (filtros()$nivel == "Regional")
                   regiao == filtros()$regiao
                 else if (filtros()$nivel == "Estadual")
@@ -1759,16 +1405,24 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::ungroup()
           }
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
+        } else if (grepl("tx_abortos_mil_mulheres_valor_medio", infos_indicador()$nome_abreviado)) {
           if (input$opcoes_tab1 == "escolha1") {
             bloco2 |>
               dplyr::filter(
-                ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
+                ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2] & ano <= 2021 #tapa-buraco
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
-                numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
-                denominador := sum(pop_fem_10_49, na.rm = TRUE),
+                numerador := dplyr::case_when(
+                  infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio" ~ ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
+                  infos_indicador()$nome_abreviado == "sus_tx_abortos_mil_mulheres_valor_medio" ~ (((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4),
+                  infos_indicador()$nome_abreviado == "ans_tx_abortos_mil_mulheres_valor_medio" ~ (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)
+                ),
+                denominador := dplyr::case_when(
+                  infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio" ~ sum(pop_fem_10_49),
+                  infos_indicador()$nome_abreviado == "sus_tx_abortos_mil_mulheres_valor_medio" ~ sum(pop_fem_sus_10_49),
+                  infos_indicador()$nome_abreviado == "ans_tx_abortos_mil_mulheres_valor_medio" ~ sum(pop_fem_ans_10_49)
+                ),
                 proporcao := dplyr::if_else(
                   condition = infos_indicador()$tipo_do_indicador == "porcentagem",
                   true = numerador/denominador,
@@ -1779,9 +1433,9 @@ mod_nivel_3_server <- function(id, filtros){
           } else {
             bloco2 |>
               dplyr::filter(
-                ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2],
+                ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2] & ano <= 2021, #tapa-buraco
                 if (filtros()$nivel == "Nacional")
-                  ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2]
+                  ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2] & ano <= 2021 #tapa-buraco
                 else if (filtros()$nivel == "Regional")
                   regiao == filtros()$regiao
                 else if (filtros()$nivel == "Estadual")
@@ -1795,8 +1449,16 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
-                numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
-                denominador := sum(pop_fem_10_49, na.rm = TRUE),
+                numerador := dplyr::case_when(
+                  infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio" ~ ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
+                  infos_indicador()$nome_abreviado == "sus_tx_abortos_mil_mulheres_valor_medio" ~ (((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4),
+                  infos_indicador()$nome_abreviado == "ans_tx_abortos_mil_mulheres_valor_medio" ~ (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)
+                ),
+                denominador := dplyr::case_when(
+                  infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio" ~ sum(pop_fem_10_49),
+                  infos_indicador()$nome_abreviado == "sus_tx_abortos_mil_mulheres_valor_medio" ~ sum(pop_fem_sus_10_49),
+                  infos_indicador()$nome_abreviado == "ans_tx_abortos_mil_mulheres_valor_medio" ~ sum(pop_fem_ans_10_49)
+                ),
                 proporcao := dplyr::if_else(
                   condition = infos_indicador()$tipo_do_indicador == "porcentagem",
                   true = numerador/denominador,
@@ -1805,7 +1467,7 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::ungroup()
           }
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio") {
+        } else if (grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado)) {
           if (input$opcoes_tab1 == "escolha1") {
             bloco2 |>
               dplyr::filter(
@@ -1813,8 +1475,16 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
-                numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
-                denominador := sum(total_de_nascidos_vivos),
+                numerador := dplyr::case_when(
+                  infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
+                  infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ (((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4),
+                  infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)
+                ),
+                denominador := dplyr::case_when(
+                  infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ sum(total_de_nascidos_vivos_ans),
+                  infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ sum(total_de_nascidos_vivos_sus),
+                  infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ sum(total_de_nascidos_vivos_ans)
+                ),
                 proporcao := dplyr::if_else(
                   condition = infos_indicador()$tipo_do_indicador == "porcentagem",
                   true = numerador/denominador,
@@ -1841,8 +1511,16 @@ mod_nivel_3_server <- function(id, filtros){
               ) |>
               dplyr::group_by(uf, macro_r_saude, municipio) |>
               dplyr::summarise(
-                numerador := ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
-                denominador := sum(total_de_nascidos_vivos),
+                numerador := dplyr::case_when(
+                  infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ ((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)),
+                  infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ (((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 4),
+                  infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 6)
+                ),
+                denominador := dplyr::case_when(
+                  infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ sum(total_de_nascidos_vivos_ans),
+                  infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ sum(total_de_nascidos_vivos_sus),
+                  infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ sum(total_de_nascidos_vivos_ans)
+                ),
                 proporcao := dplyr::if_else(
                   condition = infos_indicador()$tipo_do_indicador == "porcentagem",
                   true = numerador/denominador,
@@ -1893,7 +1571,7 @@ mod_nivel_3_server <- function(id, filtros){
     cols <- c("#2c115f", "#b73779", "#fc8961")
 
     output$titulo_pagina <- renderUI({
-      if (length(filtros()$ano2[1]:filtros()$ano2[2]) > 1) {
+      if (length(anos_disponiveis()) > 1) {
         ano <- glue::glue("{filtros()$ano2[1]} a {filtros()$ano2[2]}")
       } else {
         ano <- filtros()$ano2[1]
@@ -1911,7 +1589,6 @@ mod_nivel_3_server <- function(id, filtros){
       tags$b(paste("-", infos_indicador()$indicador, glue::glue("({local1}, {ano})")), style = "font-size: 30px")
     })
 
-
     output$grafico_incompletude <- highcharter::renderHighchart({
       validate(
         need(
@@ -1928,7 +1605,8 @@ mod_nivel_3_server <- function(id, filtros){
             highcharter::hcaes(x = ano, y = proporcao, group = localidade, colour = localidade)
           ) |>
           highcharter::hc_add_series(
-            data = data_referencia_incompletude(),
+            data = data_referencia_incompletude() |>
+              dplyr::filter(ano <= ifelse(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento"), 2020, 2022)),
             type = "line",
             highcharter::hcaes(x = ano, y = excelente, group = class_excelente, colour = class_excelente),
             dashStyle = "ShortDot",
@@ -1936,7 +1614,8 @@ mod_nivel_3_server <- function(id, filtros){
             #tooltip = list(valuePrefix = "<")
           ) |>
           highcharter::hc_add_series(
-            data = data_referencia_incompletude(),
+            data = data_referencia_incompletude() |>
+              dplyr::filter(ano <= ifelse(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento"), 2020, 2022)),
             type = "line",
             highcharter::hcaes(x = ano, y = bom, group = class_bom, colour = class_bom),
             dashStyle = "ShortDot",
@@ -1944,7 +1623,11 @@ mod_nivel_3_server <- function(id, filtros){
             #tooltip = list(valuePrefix = "<")
           ) |>
           highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-          highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+          highcharter::hc_xAxis(
+            title = list(text = ""),
+            categories = anos_disponiveis(),
+            allowDecimals = FALSE
+          ) |>
           highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
           highcharter::hc_title(text = HTML(glue::glue("<b style = 'font-size: 16px'> {infos_indicador()$nome_incompletude1} </b>"))) |>
           highcharter::hc_colors(cols)
@@ -1962,7 +1645,8 @@ mod_nivel_3_server <- function(id, filtros){
               highcharter::hcaes(x = ano, y = proporcao, group = localidade, colour = localidade)
             ) |>
             highcharter::hc_add_series(
-              data = data_referencia_incompletude(),
+              data = data_referencia_incompletude() |>
+                dplyr::filter(ano <= ifelse(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento"), 2020, 2022)),
               type = "line",
               highcharter::hcaes(x = ano, y = excelente, group = class_excelente, colour = class_excelente),
               dashStyle = "ShortDot",
@@ -1970,7 +1654,8 @@ mod_nivel_3_server <- function(id, filtros){
               #tooltip = list(valuePrefix = "<")
             ) |>
             highcharter::hc_add_series(
-              data = data_referencia_incompletude(),
+              data = data_referencia_incompletude() |>
+                dplyr::filter(ano <= ifelse(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento"), 2020, 2022)),
               type = "line",
               highcharter::hcaes(x = ano, y = bom, group = class_bom, colour = class_bom),
               dashStyle = "ShortDot",
@@ -1978,7 +1663,11 @@ mod_nivel_3_server <- function(id, filtros){
               #tooltip = list(valuePrefix = "<")
             ) |>
             highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-            highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+            highcharter::hc_xAxis(
+              title = list(text = ""),
+              categories = anos_disponiveis(),
+              allowDecimals = FALSE
+            ) |>
             highcharter::hc_yAxis(title = list(text = "%"), min = 0) |>
             highcharter::hc_title(
               text = HTML(
@@ -1995,7 +1684,8 @@ mod_nivel_3_server <- function(id, filtros){
                 highcharter::hcaes(x = ano, y = proporcao, group = localidade, colour = localidade)
               ) |>
               highcharter::hc_add_series(
-                data = data_referencia_incompletude(),
+                data = data_referencia_incompletude() |>
+                  dplyr::filter(ano <= ifelse(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento"), 2020, 2022)),
                 type = "line",
                 highcharter::hcaes(x = ano, y = ideal_mif, group = class, colour = class),
                 dashStyle = "ShortDot",
@@ -2003,7 +1693,11 @@ mod_nivel_3_server <- function(id, filtros){
                 #tooltip = list(valuePrefix = "<")
               ) |>
               highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-              highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+              highcharter::hc_xAxis(
+                title = list(text = ""),
+                categories = anos_disponiveis(),
+                allowDecimals = FALSE
+              ) |>
               highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
               highcharter::hc_title(
                 text = HTML(
@@ -2019,7 +1713,8 @@ mod_nivel_3_server <- function(id, filtros){
                 highcharter::hcaes(x = ano, y = proporcao, group = localidade, colour = localidade)
               ) |>
               highcharter::hc_add_series(
-                data = data_referencia_incompletude(),
+                data = data_referencia_incompletude() |>
+                  dplyr::filter(ano <= ifelse(infos_indicador()$bloco %in% c("bloco6", "bloco4_deslocamento"), 2020, 2022)),
                 type = "line",
                 highcharter::hcaes(x = ano, y = ideal_maternos, group = class, colour = class),
                 dashStyle = "ShortDot",
@@ -2027,7 +1722,11 @@ mod_nivel_3_server <- function(id, filtros){
                 #tooltip = list(valuePrefix = "<")
               ) |>
               highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
-              highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+              highcharter::hc_xAxis(
+                title = list(text = ""),
+                categories = anos_disponiveis(),
+                allowDecimals = FALSE
+              ) |>
               highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
               highcharter::hc_title(
                 text = HTML(
@@ -2041,10 +1740,9 @@ mod_nivel_3_server <- function(id, filtros){
 
     })
 
-
     output$grafico_cobertura <- highcharter::renderHighchart({
       if (infos_indicador()$num_indicadores_incompletude == 0) {
-        if (infos_indicador()$nome_abreviado != "porc_sc" & infos_indicador()$nome_abreviado != "tx_abortos_cem_nascidos_vivos_valor_medio") {
+        if (infos_indicador()$nome_abreviado != "porc_sc" & grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado)) {
           validate("Informações a respeito da cobertura dos sistemas de informação utilizados para a construção deste indicador não estão disponíveis.")
         }
       }
@@ -2066,7 +1764,7 @@ mod_nivel_3_server <- function(id, filtros){
           highcharter::hcaes(x = ano, y = cobertura, group = localidade, colour = localidade)
         ) |>
         highcharter::hc_add_series(
-          data = data_referencia_cobertura(),
+          data = data_referencia_cobertura() |> dplyr::filter(ano <= 2020),
           type = "line",
           highcharter::hcaes(x = ano, y = referencia, group = localidade, colour = localidade),
           dashStyle = "ShortDot",
@@ -2074,7 +1772,11 @@ mod_nivel_3_server <- function(id, filtros){
         ) |>
         highcharter::hc_tooltip(valueSuffix = "%", shared = TRUE, sort = TRUE) |>
         highcharter::hc_title(text = HTML(glue::glue("<b style = 'font-size: 16px'> Cobertura do {base} </b>"))) |>
-        highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+        highcharter::hc_xAxis(
+          title = list(text = ""),
+          categories = anos_disponiveis(),
+          allowDecimals = FALSE
+        ) |>
         highcharter::hc_yAxis(title = list(text = "%"), min = 0, max = 100) |>
         highcharter::hc_colors(cols)
     })
@@ -2165,7 +1867,7 @@ mod_nivel_3_server <- function(id, filtros){
     })
 
     output$grafico_serie <- highcharter::renderHighchart({
-      if (!(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")) & !(base::startsWith(infos_indicador()$indicador, "Medianas"))) {
+      if (!(base::startsWith(infos_indicador()$indicador, "Medianas"))) {
         if (infos_indicador()$nome_abreviado == "rmm") {
           grafico_base <- highcharter::highchart() |>
             highcharter::hc_add_series(
@@ -2174,7 +1876,11 @@ mod_nivel_3_server <- function(id, filtros){
               highcharter::hcaes(x = ano, y = rmm, group = class, colour = class)
             ) |>
             highcharter::hc_tooltip(valueSuffix = dplyr::if_else(infos_indicador()$tipo_do_indicador == "porcentagem", "%", ""), shared = TRUE, sort = TRUE) |>
-            highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+            highcharter::hc_xAxis(
+              title = list(text = ""),
+              categories = anos_disponiveis(),
+              allowDecimals = FALSE
+            ) |>
             highcharter::hc_yAxis(
               title = list(
                 text = stringr::str_replace(infos_indicador()$indicador, "Porcentagem", "%")
@@ -2187,10 +1893,21 @@ mod_nivel_3_server <- function(id, filtros){
             highcharter::hc_add_series(
               data = data_grafico_serie(),
               type = "line",
-              highcharter::hcaes(x = ano, y = proporcao, group = class, colour = class)
+              highcharter::hcaes(x = ano, y = indicador, group = class, colour = class),
+              tooltip = list(
+                pointFormat = dplyr::case_when(
+                  grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado) ~ "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>",
+                  grepl("tx_abortos_mil_mulheres_valor_medio", infos_indicador()$nome_abreviado) ~ "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>",
+                  !grepl("tx_abortos", infos_indicador()$nome_abreviado) ~ "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} </b> </br>"
+                )
+              )
             ) |>
             highcharter::hc_tooltip(valueSuffix = dplyr::if_else(infos_indicador()$tipo_do_indicador == "porcentagem", "%", ""), shared = TRUE, sort = TRUE) |>
-            highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
+            highcharter::hc_xAxis(
+              title = list(text = ""),
+              categories = anos_disponiveis(),
+              allowDecimals = FALSE
+            ) |>
             highcharter::hc_yAxis(
               title = list(
                 text = stringr::str_replace(infos_indicador()$indicador, "Porcentagem", "%")
@@ -2200,133 +1917,66 @@ mod_nivel_3_server <- function(id, filtros){
             highcharter::hc_colors(cols)
         }
       } else {
-        if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
-          grafico_base <- highcharter::highchart() |>
-            highcharter::hc_add_series(
-              data = data_grafico_serie() |> dplyr::filter(ano >= 2015),
-              type = "line",
-              highcharter::hcaes(x = ano, y = tx_abortos_mil_mulheres_valor_medio, group = class, colour = class),
-              tooltip = list(
-                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
-              ),
-              color = '#2c115f'
-            ) |>
-            highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
-            highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
-            highcharter::hc_yAxis(title = list(text = "Taxa"), min = 0)
-        } else if (infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio") {
-          grafico_base <- highcharter::highchart() |>
-            highcharter::hc_add_series(
-              data = data_grafico_serie() |> dplyr::filter(ano >= 2015),
-              type = "line",
-              highcharter::hcaes(x = ano, y = tx_abortos_cem_nascidos_vivos_valor_medio, group = class, colour = class),
-              color = '#2c115f',
-              tooltip = list(
-                pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} e limite superior de {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
-              )
-            ) |>
-            highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
-            highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
-            highcharter::hc_yAxis(title = list(text = "Taxa"), min = 0)
-        } else if (base::startsWith(infos_indicador()$indicador, "Medianas")) {
-          grafico_base <- highcharter::highchart() |>
-            highcharter::hc_add_series(
-              name = "Total de partos",
-              data = data_grafico_serie(),
-              type = "line",
-              highcharter::hcaes(x = ano, y = km_total),
-              legendIndex = 1,
-              index = 1
-            ) |>
-            highcharter::hc_add_series(
-              name = "Serviços de baixa complexidade",
-              data = data_grafico_serie(),
-              type = "line",
-              highcharter::hcaes(x = ano, y = km_baixa_complexidade),
-              legendIndex = 2,
-              index = 2
-            ) |>
-            highcharter::hc_add_series(
-              name = "Serviços de alta complexidade",
-              data = data_grafico_serie(),
-              type = "line",
-              highcharter::hcaes(x = ano, y = km_alta_complexidade),
-              legendIndex = 3,
-              index = 3
-            ) |>
-            highcharter::hc_tooltip(valueSuffix = " km", shared = TRUE, sort = TRUE, valueDecimals = 2) |>
-            highcharter::hc_xAxis(title = list(text = ""), allowDecimals = FALSE) |>
-            highcharter::hc_yAxis(title = list(text = "km"), min = 0) |>
-            highcharter::hc_colors(cols)
-        }
+        grafico_base <- highcharter::highchart() |>
+          highcharter::hc_add_series(
+            name = "Total de partos",
+            data = data_grafico_serie(),
+            type = "line",
+            highcharter::hcaes(x = ano, y = km_total),
+            legendIndex = 1,
+            index = 1
+          ) |>
+          highcharter::hc_add_series(
+            name = "Serviços de baixa complexidade",
+            data = data_grafico_serie(),
+            type = "line",
+            highcharter::hcaes(x = ano, y = km_baixa_complexidade),
+            legendIndex = 2,
+            index = 2
+          ) |>
+          highcharter::hc_add_series(
+            name = "Serviços de alta complexidade",
+            data = data_grafico_serie(),
+            type = "line",
+            highcharter::hcaes(x = ano, y = km_alta_complexidade),
+            legendIndex = 3,
+            index = 3
+          ) |>
+          highcharter::hc_tooltip(valueSuffix = " km", shared = TRUE, sort = TRUE, valueDecimals = 2) |>
+          highcharter::hc_xAxis(
+            title = list(text = ""),
+            categories = anos_disponiveis(),
+            allowDecimals = FALSE
+          ) |>
+          highcharter::hc_yAxis(title = list(text = "km"), min = 0) |>
+          highcharter::hc_colors(cols)
       }
       if ((filtros()$nivel == "Nacional" & infos_indicador()$descricao_referencia == "média nacional") | (infos_indicador()$nome_abreviado == "obitos_mat_totais") | (base::startsWith(infos_indicador()$indicador, "Medianas"))) {
         grafico_base
       } else {
-        if (infos_indicador()$nome_abreviado != "porc_baixo_peso") {
-          if (infos_indicador()$nome_abreviado == "prop_robson2_tx_cesariana") {
-            grafico_base |> highcharter::hc_add_series(
-              data = data_referencia(),
-              name = "Referência (meta OMS)",
-              highcharter::hcaes(x = ano, low = 20, high = 35),
-              type = "arearange",
-              dashStyle = "ShortDot",
-              color = "#721f81",
-              fillOpacity = 0.2,
-              enableMouseTracking = TRUE
-            )
-          } else if (infos_indicador()$nome_abreviado == "prop_robson5_tx_cesariana") {
-            grafico_base |> highcharter::hc_add_series(
-              data = data_referencia(),
-              name = "Referência (meta OMS)",
-              highcharter::hcaes(x = ano, low = 50, high = 60),
-              type = "arearange",
-              dashStyle = "ShortDot",
-              color = "#721f81",
-              fillOpacity = 0.2,
-              enableMouseTracking = TRUE
-            )
-          } else if (infos_indicador()$nome_abreviado == "tx_abortos_mil_mulheres_valor_medio") {
-            grafico_base |>
-              highcharter::hc_add_series(
-                name = "Referência (média nacional)",
-                data = data_referencia() |> dplyr::filter(ano >= 2015),
-                type = "line",
-                highcharter::hcaes(x = ano, y = tx_abortos_mil_mulheres_valor_medio),
-                tooltip = list(
-                  pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_mil_mulheres_lim_inf:,f} e limite superior de {point.tx_abortos_mil_mulheres_lim_sup:,f})</b> </br>"
-                ),
-                dashStyle = "ShortDot",
-                color = "#721F81FF",
-                opacity = 0.8
-              )
-          } else if (infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio") {
-            grafico_base |>
-              highcharter::hc_add_series(
-                name = "Referência (média nacional)",
-                data = data_referencia() |> dplyr::filter(ano >= 2015),
-                type = "line",
-                highcharter::hcaes(x = ano, y = tx_abortos_cem_nascidos_vivos_valor_medio),
-                tooltip = list(
-                  pointFormat = "<span style = 'color: {series.color}'>&#9679</span> {series.name}: <b> {point.y} (limite inferior de {point.tx_abortos_cem_nascidos_vivos_lim_inf:,f} e limite superior de {point.tx_abortos_cem_nascidos_vivos_lim_sup:,f})</b> </br>"
-                ),
-                dashStyle = "ShortDot",
-                color = "#721F81FF",
-                opacity = 0.8
-              )
-          } else {
-            grafico_base |>
-              highcharter::hc_add_series(
-                data = data_referencia(),
-                type = "line",
-                highcharter::hcaes(x = ano, y = proporcao, group = class, colour = class),
-                name = glue::glue("Referência ({infos_indicador()$descricao_referencia})"),
-                dashStyle = "ShortDot",
-                opacity = 0.8
-              )
-          }
-
-        } else {
+        if (infos_indicador()$nome_abreviado == "prop_robson2_tx_cesariana") {
+          grafico_base |> highcharter::hc_add_series(
+            data = data_referencia(),
+            name = "Referência (meta OMS)",
+            highcharter::hcaes(x = ano, low = 20, high = 35),
+            type = "arearange",
+            dashStyle = "ShortDot",
+            color = "#721f81",
+            fillOpacity = 0.2,
+            enableMouseTracking = TRUE
+          )
+        } else if (infos_indicador()$nome_abreviado == "prop_robson5_tx_cesariana") {
+          grafico_base |> highcharter::hc_add_series(
+            data = data_referencia(),
+            name = "Referência (meta OMS)",
+            highcharter::hcaes(x = ano, low = 50, high = 60),
+            type = "arearange",
+            dashStyle = "ShortDot",
+            color = "#721f81",
+            fillOpacity = 0.2,
+            enableMouseTracking = TRUE
+          )
+        } else if (infos_indicador()$nome_abreviado == "porc_baixo_peso") {
           grafico_base |>
             highcharter::hc_add_series(
               data = data_referencia_baixo_peso(),
@@ -2336,8 +1986,24 @@ mod_nivel_3_server <- function(id, filtros){
               dashStyle = "ShortDot",
               opacity = 0.8
             )
+        } else {
+          grafico_base |>
+            highcharter::hc_add_series(
+              data = data_referencia() |>
+                dplyr::filter(
+                  ano <= ifelse(
+                    infos_indicador()$nome_abreviado %in% indicadores_2022(),
+                    2021,
+                    ifelse(infos_indicador()$nome_abreviado %in% indicadores_2020, 2020, 2022)
+                  )
+                ),
+              type = "line",
+              highcharter::hcaes(x = ano, y = indicador, group = class, colour = class),
+              name = glue::glue("Referência ({infos_indicador()$descricao_referencia})"),
+              dashStyle = "ShortDot",
+              opacity = 0.8
+            )
         }
-
       }
     })
 
@@ -2409,9 +2075,9 @@ mod_nivel_3_server <- function(id, filtros){
               ),
               proporcao = reactable::colDef(
                 name = dplyr::if_else(
-                  !(infos_indicador()$nome_abreviado %in% c("tx_abortos_mil_mulheres_valor_medio", "tx_abortos_cem_nascidos_vivos_valor_medio")),
+                  !(grepl("tx_abortos_", infos_indicador()$nome_abreviado)),
                   infos_indicador()$indicador,
-                  paste("Valor médio da", tolower(infos_indicador()$indicador))
+                  paste0("Valor médio da ", tolower(substr(infos_indicador()$indicador, 1, 1)), substr(infos_indicador()$indicador, 2, nchar(infos_indicador()$indicador)))
                   ),
                 aggregate = proporcao_geral("numerador", "denominador", infos_indicador()$fator, infos_indicador()$tipo_do_indicador),
                 format = reactable::colFormat(
