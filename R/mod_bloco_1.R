@@ -273,59 +273,38 @@ mod_bloco_1_ui <- function(id){
 #' bloco_1 Server Functions
 #'
 #' @noRd
-mod_bloco_1_server <- function(id, filtros){
+mod_bloco_1_server <- function(id, filtros, titulo_localidade_aux){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    ##### Criando o output que recebe a localidade e o ano escolhidos ####
     output$titulo_localidade <- renderUI({
-
-      if (length(filtros()$ano2[1]:filtros()$ano2[2]) > 1) {
-        ano <- glue::glue("{filtros()$ano2[1]} a {filtros()$ano2[2]}")
-      } else {
-        ano <- filtros()$ano2[1]
-      }
-
-      if (filtros()$comparar == "Não") {
-        local1 <- dplyr::case_when(
-          filtros()$nivel == "Nacional" ~ "Brasil",
-          filtros()$nivel == "Regional" ~ filtros()$regiao,
-          filtros()$nivel == "Estadual" ~ filtros()$estado,
-          filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-          filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-          filtros()$nivel == "Municipal" ~ filtros()$municipio
-        )
-        texto <- glue::glue("({local1}, {ano})")
-      } else {
-        local1 <- dplyr::case_when(
-          filtros()$nivel == "Nacional" ~ "Brasil",
-          filtros()$nivel == "Regional" ~ filtros()$regiao,
-          filtros()$nivel == "Estadual" ~ filtros()$estado,
-          filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-          filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-          filtros()$nivel == "Municipal" ~ filtros()$municipio
-        )
-        local2 <- dplyr::case_when(
-          filtros()$nivel2 == "Nacional" ~ "Brasil",
-          filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-          filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-          filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-          filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-          filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-          filtros()$nivel2 == "Municípios semelhantes" ~ "municípios semelhantes"
-        )
-        texto <- glue::glue("({local1} e {local2}, {ano})")
-      }
-
-      tags$b(texto, style = "font-size: 33px")
+      titulo_localidade_aux()
     })
-
 
     ##### Definindo as cores para os gráficos #####
     cols <- c("#2c115f", "#b73779", "#fc8961")
 
 
-    ##### Dados do primeiro bloco de indicadores para a localidade escolhida #####
+    # Criando um data.frame com os cálculos dos indicadores -------------------
+    bloco1_calcs <- data.frame(
+      tipo = c("local", "referencia"),
+      sum_total_de_nascidos_vivos = rep("sum(total_de_nascidos_vivos)", 2),
+      porc_dependentes_sus = rep("round((sum(populacao_feminina_10_a_49[ano <= 2021]) - sum(pop_fem_10_49_com_plano_saude[ano <= 2021]))/sum(populacao_feminina_10_a_49[ano <= 2021]) * 100, 1)", 2),
+      porc_cobertura_esf = c("round(sum(media_cobertura_esf[ano <= 2020])/sum(populacao_total[ano <= 2020]) * 100, 1)", "95"),
+      porc_nvm_menor_que_20_anos = rep("round(sum(nvm_menor_que_20_anos)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_entre_20_e_34_anos = rep("round(sum(nvm_entre_20_e_34_anos)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_maior_que_34_anos = rep("round(sum(nvm_maior_que_34_anos)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_com_escolaridade_ate_3 = rep("round(sum(nvm_com_escolaridade_ate_3)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_com_escolaridade_de_4_a_7 = rep("round(sum(nvm_com_escolaridade_de_4_a_7)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_com_escolaridade_de_8_a_11 = rep("round(sum(nvm_com_escolaridade_de_8_a_11)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_com_escolaridade_acima_de_11 = rep("round(sum(nvm_com_escolaridade_acima_de_11)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_com_cor_da_pele_branca = rep("round(sum(nvm_com_cor_da_pele_branca)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_com_cor_da_pele_preta = rep("round(sum(nvm_com_cor_da_pele_preta)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_com_cor_da_pele_amarela = rep("round(sum(nvm_com_cor_da_pele_amarela)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_com_cor_da_pele_parda = rep("round(sum(nvm_com_cor_da_pele_parda)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
+      porc_nvm_indigenas = rep("round(sum(nvm_indigenas)/sum(total_de_nascidos_vivos) * 100, 1)", 2)
+    )
+
     data1 <- reactive({
       bloco1 |>
         dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
@@ -345,41 +324,7 @@ mod_bloco_1_server <- function(id, filtros){
             municipio == filtros()$municipio & uf == filtros()$estado_municipio
         ) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-          populacao_feminina_10_a_49 = sum(populacao_feminina_10_a_49),
-          porc_dependentes_sus = round((populacao_feminina_10_a_49 - sum(pop_fem_10_49_com_plano_saude))/populacao_feminina_10_a_49 * 100, 1),
-          porc_cobertura_esf = round(sum(media_cobertura_esf)/sum(populacao_total) * 100, 1),
-          porc_nvm_menor_que_20_anos = round(sum(nvm_menor_que_20_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_entre_20_e_34_anos = round(sum(nvm_entre_20_e_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_maior_que_34_anos = round(sum(nvm_maior_que_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_ate_3 = round(sum(nvm_com_escolaridade_ate_3)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_4_a_7 = round(sum(nvm_com_escolaridade_de_4_a_7)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_8_a_11 = round(sum(nvm_com_escolaridade_de_8_a_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_acima_de_11 = round(sum(nvm_com_escolaridade_acima_de_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_branca = round(sum(nvm_com_cor_da_pele_branca)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_preta = round(sum(nvm_com_cor_da_pele_preta)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_amarela = round(sum(nvm_com_cor_da_pele_amarela)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_parda = round(sum(nvm_com_cor_da_pele_parda)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_indigenas = round(sum(nvm_indigenas)/total_de_nascidos_vivos * 100, 1),
-          class = dplyr::case_when(
-            filtros()$nivel == "Nacional" ~ dplyr::if_else(
-              filtros()$comparar == "Não",
-              "Brasil (valor de referência)",
-              dplyr::if_else(
-                filtros()$mostrar_referencia == "nao_mostrar_referencia",
-                "Brasil",
-                "Brasil (valor de referência)"
-              )
-            ),
-            filtros()$nivel == "Regional" ~ filtros()$regiao,
-            filtros()$nivel == "Estadual" ~ filtros()$estado,
-            filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-            filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-            filtros()$nivel == "Municipal" ~ filtros()$municipio
-          )
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco1_calcs, filtros = filtros())
     })
 
 
@@ -404,42 +349,7 @@ mod_bloco_1_server <- function(id, filtros){
             grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
         ) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-          populacao_feminina_10_a_49 = sum(populacao_feminina_10_a_49),
-          porc_dependentes_sus = round((populacao_feminina_10_a_49 - sum(pop_fem_10_49_com_plano_saude))/populacao_feminina_10_a_49 * 100, 1),
-          porc_cobertura_esf = round(sum(media_cobertura_esf)/sum(populacao_total) * 100, 1),
-          porc_nvm_menor_que_20_anos = round(sum(nvm_menor_que_20_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_entre_20_e_34_anos = round(sum(nvm_entre_20_e_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_maior_que_34_anos = round(sum(nvm_maior_que_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_ate_3 = round(sum(nvm_com_escolaridade_ate_3)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_4_a_7 = round(sum(nvm_com_escolaridade_de_4_a_7)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_8_a_11 = round(sum(nvm_com_escolaridade_de_8_a_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_acima_de_11 = round(sum(nvm_com_escolaridade_acima_de_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_branca = round(sum(nvm_com_cor_da_pele_branca)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_preta = round(sum(nvm_com_cor_da_pele_preta)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_amarela = round(sum(nvm_com_cor_da_pele_amarela)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_parda = round(sum(nvm_com_cor_da_pele_parda)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_indigenas = round(sum(nvm_indigenas)/total_de_nascidos_vivos * 100, 1),
-          class = dplyr::case_when(
-            filtros()$nivel2 == "Nacional" ~ dplyr::if_else(
-              filtros()$comparar == "Não",
-              "Brasil (valor de referência)",
-              dplyr::if_else(
-                filtros()$mostrar_referencia == "nao_mostrar_referencia",
-                "Brasil",
-                "Brasil (valor de referência)"
-              )
-            ),
-            filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-            filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-            filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-            filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-            filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-            filtros()$nivel2 == "Municípios semelhantes" ~ "Média dos municípios semelhantes"
-          )
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco1_calcs, filtros = filtros(), comp = TRUE)
     })
 
 
@@ -530,49 +440,13 @@ mod_bloco_1_server <- function(id, filtros){
             }
           }
         ) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-          populacao_feminina_10_a_49 = sum(populacao_feminina_10_a_49[ano <= 2021]),
-          porc_dependentes_sus = round((populacao_feminina_10_a_49 - sum(pop_fem_10_49_com_plano_saude[ano <= 2021]))/populacao_feminina_10_a_49 * 100, 1),
-          porc_cobertura_esf = round(sum(media_cobertura_esf[ano <= 2020])/sum(populacao_total[ano <= 2020]) * 100, 1),
-          porc_nvm_menor_que_20_anos = round(sum(nvm_menor_que_20_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_entre_20_e_34_anos = round(sum(nvm_entre_20_e_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_maior_que_34_anos = round(sum(nvm_maior_que_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_ate_3 = round(sum(nvm_com_escolaridade_ate_3)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_4_a_7 = round(sum(nvm_com_escolaridade_de_4_a_7)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_8_a_11 = round(sum(nvm_com_escolaridade_de_8_a_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_acima_de_11 = round(sum(nvm_com_escolaridade_acima_de_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_branca = round(sum(nvm_com_cor_da_pele_branca)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_preta = round(sum(nvm_com_cor_da_pele_preta)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_amarela = round(sum(nvm_com_cor_da_pele_amarela)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_parda = round(sum(nvm_com_cor_da_pele_parda)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_indigenas = round(sum(nvm_indigenas)/total_de_nascidos_vivos * 100, 1)
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco1_calcs, filtros = filtros())
     })
 
     data_brasil_resumo <- reactive({
       bloco1 |>
         dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-          populacao_feminina_10_a_49 = sum(populacao_feminina_10_a_49[ano <= 2021]),
-          porc_dependentes_sus = round((populacao_feminina_10_a_49 - sum(pop_fem_10_49_com_plano_saude[ano <= 2021]))/populacao_feminina_10_a_49 * 100, 1),
-          porc_cobertura_esf = round(sum(media_cobertura_esf[ano <= 2020])/sum(populacao_total[ano <= 2020]) * 100, 1),
-          porc_nvm_menor_que_20_anos = round(sum(nvm_menor_que_20_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_entre_20_e_34_anos = round(sum(nvm_entre_20_e_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_maior_que_34_anos = round(sum(nvm_maior_que_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_ate_3 = round(sum(nvm_com_escolaridade_ate_3)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_4_a_7 = round(sum(nvm_com_escolaridade_de_4_a_7)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_8_a_11 = round(sum(nvm_com_escolaridade_de_8_a_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_acima_de_11 = round(sum(nvm_com_escolaridade_acima_de_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_branca = round(sum(nvm_com_cor_da_pele_branca)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_preta = round(sum(nvm_com_cor_da_pele_preta)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_amarela = round(sum(nvm_com_cor_da_pele_amarela)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_parda = round(sum(nvm_com_cor_da_pele_parda)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_indigenas = round(sum(nvm_indigenas)/total_de_nascidos_vivos * 100, 1)
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco1_calcs, filtros = filtros())
     })
 
     output$caixa_b1_i1 <- renderUI({
@@ -736,10 +610,10 @@ mod_bloco_1_server <- function(id, filtros){
     output$caixa_b1_i3 <- renderUI({
       cria_caixa_server(
         dados = data_resumo(),
-        indicador = "total_de_nascidos_vivos",
+        indicador = "sum_total_de_nascidos_vivos",
         titulo = "Nascidos vivos",
         tem_meta = FALSE,
-        valor_de_referencia = data_brasil_resumo()$total_de_nascidos_vivos,
+        valor_de_referencia = data_brasil_resumo()$sum_total_de_nascidos_vivos,
         tipo = "número",
         invertido = FALSE,
         cor = dplyr::if_else(filtros()$nivel == "Nacional", "lightgrey", "#cbd6ff"),
@@ -1043,26 +917,7 @@ mod_bloco_1_server <- function(id, filtros){
       bloco1 |>
         dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-          populacao_feminina_10_a_49 = sum(populacao_feminina_10_a_49),
-          porc_dependentes_sus = round((populacao_feminina_10_a_49 - sum(pop_fem_10_49_com_plano_saude))/populacao_feminina_10_a_49 * 100, 1),
-          porc_cobertura_esf = 95,
-          porc_nvm_menor_que_20_anos = round(sum(nvm_menor_que_20_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_entre_20_e_34_anos = round(sum(nvm_entre_20_e_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_maior_que_34_anos = round(sum(nvm_maior_que_34_anos)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_ate_3 = round(sum(nvm_com_escolaridade_ate_3)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_4_a_7 = round(sum(nvm_com_escolaridade_de_4_a_7)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_de_8_a_11 = round(sum(nvm_com_escolaridade_de_8_a_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_escolaridade_acima_de_11 = round(sum(nvm_com_escolaridade_acima_de_11)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_branca = round(sum(nvm_com_cor_da_pele_branca)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_preta = round(sum(nvm_com_cor_da_pele_preta)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_amarela = round(sum(nvm_com_cor_da_pele_amarela)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_com_cor_da_pele_parda = round(sum(nvm_com_cor_da_pele_parda)/total_de_nascidos_vivos * 100, 1),
-          porc_nvm_indigenas = round(sum(nvm_indigenas)/total_de_nascidos_vivos * 100, 1),
-          class = "Referência"
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco1_calcs, filtros = filtros(), referencia = TRUE)
     })
 
 

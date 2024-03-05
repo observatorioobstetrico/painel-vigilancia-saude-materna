@@ -181,51 +181,12 @@ mod_bloco_3_ui <- function(id) {
 #'
 #' @noRd
 
-mod_bloco_3_server <- function(id, filtros){
+mod_bloco_3_server <- function(id, filtros, titulo_localidade_aux){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    ##### Criando o output que recebe a localidade e o ano escolhidos ####
     output$titulo_localidade <- renderUI({
-
-      if (length(filtros()$ano2[1]:filtros()$ano2[2]) > 1) {
-        ano <- glue::glue("{filtros()$ano2[1]} a {filtros()$ano2[2]}")
-      } else {
-        ano <- filtros()$ano2[1]
-      }
-
-      if (filtros()$comparar == "Não") {
-        local1 <- dplyr::case_when(
-          filtros()$nivel == "Nacional" ~ "Brasil",
-          filtros()$nivel == "Regional" ~ filtros()$regiao,
-          filtros()$nivel == "Estadual" ~ filtros()$estado,
-          filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-          filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-          filtros()$nivel == "Municipal" ~ filtros()$municipio
-        )
-        texto <- glue::glue("({local1}, {ano})")
-      } else {
-        local1 <- dplyr::case_when(
-          filtros()$nivel == "Nacional" ~ "Brasil",
-          filtros()$nivel == "Regional" ~ filtros()$regiao,
-          filtros()$nivel == "Estadual" ~ filtros()$estado,
-          filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-          filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-          filtros()$nivel == "Municipal" ~ filtros()$municipio
-        )
-        local2 <- dplyr::case_when(
-          filtros()$nivel2 == "Nacional" ~ "Brasil",
-          filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-          filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-          filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-          filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-          filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-          filtros()$nivel2 == "Municípios semelhantes" ~ "municípios semelhantes"
-        )
-        texto <- glue::glue("({local1} e {local2}, {ano})")
-      }
-
-      tags$b(texto, style = "font-size: 33px")
+      titulo_localidade_aux()
     })
 
     #dados resumo geral anos
@@ -263,6 +224,79 @@ mod_bloco_3_server <- function(id, filtros){
         )
       }
     })
+
+
+    # Criando um data.frame com os cálculos dos indicadores -------------------
+    bloco3_calcs <- data.frame(
+      tipo = c("local", "referencia"),
+      porc_inicio_prec = c("round(sum(mulheres_com_inicio_precoce_do_prenatal) / sum(total_de_nascidos_vivos) * 100, 1)", "95"),
+      porc_sc = c("round(sum(casos_sc) / sum(total_de_nascidos_vivos) * 1000, 1)", "0.5"),
+      porc_1con = c("round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal[ano >= 2014]) / sum(total_de_nascidos_vivos[ano >= 2014]) * 100, 1)", "95"),
+      porc_7 = c("round(sum(mulheres_com_mais_de_sete_consultas_prenatal[ano >= 2014]) / sum(total_de_nascidos_vivos[ano >= 2014]) * 100, 1)", "95")
+    )
+
+
+    #cores pros graficos
+    cols <- c("#2c115f", "#b73779", "#fc8961")
+
+
+    #dados com filtro e calculos
+    data3 <- reactive({
+      bloco3 |>
+        dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
+        #if(filtros()$nivel == "Estadual") dplyr::filter(uf==filtros()$estado)
+        dplyr::filter(
+          if (filtros()$nivel == "Nacional")
+            ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+          else if (filtros()$nivel == "Regional")
+            regiao == filtros()$regiao
+          else if (filtros()$nivel == "Estadual")
+            uf == filtros()$estado
+          else if (filtros()$nivel == "Macrorregião de saúde")
+            macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
+          else if(filtros()$nivel == "Microrregião de saúde")
+            r_saude == filtros()$micro & uf == filtros()$estado_micro
+          else if(filtros()$nivel == "Municipal")
+            municipio == filtros()$municipio & uf == filtros()$estado_municipio
+        ) |>
+        dplyr::group_by(ano) |>
+        cria_indicadores(df_calcs = bloco3_calcs, filtros = filtros())
+    })
+
+
+    #dados do local selecionado para a comparação
+    data3_comp <- reactive({
+      bloco3 |>
+        dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
+        dplyr::filter(
+          if (filtros()$nivel2 == "Nacional")
+            ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+          else if (filtros()$nivel2 == "Regional")
+            regiao == filtros()$regiao2
+          else if (filtros()$nivel2 == "Estadual")
+            uf == filtros()$estado2
+          else if (filtros()$nivel2 == "Macrorregião de saúde")
+            macro_r_saude == filtros()$macro2 & uf == filtros()$estado_macro2
+          else if (filtros()$nivel2 == "Microrregião de saúde")
+            r_saude == filtros()$micro2 & uf == filtros()$estado_micro2
+          else if (filtros()$nivel2 == "Municipal")
+            municipio == filtros()$municipio2 & uf == filtros()$estado_municipio2
+          else if (filtros()$nivel2 == "Municípios semelhantes")
+            grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
+        ) |>
+        dplyr::group_by(ano) |>
+        cria_indicadores(df_calcs = bloco3_calcs, filtros = filtros(), comp = TRUE)
+    })
+
+
+    #dados dos valores de referência
+    data_referencia <- reactive({
+      bloco3 |>
+        dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
+        dplyr::group_by(ano) |>
+        cria_indicadores(df_calcs = bloco3_calcs, filtros = filtros(), referencia = TRUE)
+    })
+
 
     data_resumo <- reactive({
       bloco3 |>
@@ -314,58 +348,9 @@ mod_bloco_3_server <- function(id, filtros){
             }
           }
         ) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-          porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal) / total_de_nascidos_vivos * 100, 1),
-          porc_sc = round(sum(casos_sc) / total_de_nascidos_vivos * 1000, 1),
-          porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal[ano >= 2014]) / total_de_nascidos_vivos * 100, 1),
-          porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal[ano >= 2014]) / total_de_nascidos_vivos * 100, 1)
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco3_calcs, filtros = filtros())
     })
 
-
-    #cores pros graficos
-    cols <- c("#2c115f", "#b73779", "#fc8961")
-
-
-    #dados com filtro e calculos
-    data3 <- reactive({
-      bloco3 |>
-        dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
-        #if(filtros()$nivel == "Estadual") dplyr::filter(uf==filtros()$estado)
-        dplyr::filter(
-          if (filtros()$nivel == "Nacional")
-            ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-          else if (filtros()$nivel == "Regional")
-            regiao == filtros()$regiao
-          else if (filtros()$nivel == "Estadual")
-            uf == filtros()$estado
-          else if (filtros()$nivel == "Macrorregião de saúde")
-            macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-          else if(filtros()$nivel == "Microrregião de saúde")
-            r_saude == filtros()$micro & uf == filtros()$estado_micro
-          else if(filtros()$nivel == "Municipal")
-            municipio == filtros()$municipio & uf == filtros()$estado_municipio
-        ) |>
-        dplyr::group_by(ano) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-          porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal) / total_de_nascidos_vivos * 100, 1),
-          porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal) / total_de_nascidos_vivos * 100, 1),
-          porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal) / total_de_nascidos_vivos * 100, 1),
-          porc_sc = round(sum(casos_sc) / total_de_nascidos_vivos * 1000, 1),
-          class = dplyr::case_when(
-            filtros()$nivel == "Nacional" ~ "Brasil",
-            filtros()$nivel == "Regional" ~ filtros()$regiao,
-            filtros()$nivel == "Estadual" ~ filtros()$estado,
-            filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-            filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-            filtros()$nivel == "Municipal" ~ filtros()$municipio
-          )
-        ) |>
-        dplyr::ungroup()
-    })
 
     ##### Dados de incompletude e cobertura para os indicadores do segundo bloco #####
     data_incompletude_aux <- reactive({
@@ -502,62 +487,6 @@ mod_bloco_3_server <- function(id, filtros){
     },
     ignoreNULL = FALSE
     )
-
-    #dados dos valores de referência
-    data_referencia <- reactive({
-      bloco3 |>
-        dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
-        dplyr::group_by(ano) |>
-        dplyr::summarise(
-          porc_inicio_prec = 95,
-          porc_sc = 0.5,
-          porc_1con = 95,
-          porc_7 = 95,
-          class = "Referência"
-        ) |>
-        dplyr::ungroup()
-    })
-
-
-    #dados do local selecionado para a comparação
-    data3_comp <- reactive({
-      bloco3 |>
-        dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
-        dplyr::filter(
-          if (filtros()$nivel2 == "Nacional")
-            ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-          else if (filtros()$nivel2 == "Regional")
-            regiao == filtros()$regiao2
-          else if (filtros()$nivel2 == "Estadual")
-            uf == filtros()$estado2
-          else if (filtros()$nivel2 == "Macrorregião de saúde")
-            macro_r_saude == filtros()$macro2 & uf == filtros()$estado_macro2
-          else if (filtros()$nivel2 == "Microrregião de saúde")
-            r_saude == filtros()$micro2 & uf == filtros()$estado_micro2
-          else if (filtros()$nivel2 == "Municipal")
-            municipio == filtros()$municipio2 & uf == filtros()$estado_municipio2
-          else if (filtros()$nivel2 == "Municípios semelhantes")
-            grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
-        ) |>
-        dplyr::group_by(ano) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(total_de_nascidos_vivos),
-          porc_inicio_prec = round(sum(mulheres_com_inicio_precoce_do_prenatal) / total_de_nascidos_vivos * 100, 1),
-          porc_1con = round(sum(mulheres_com_pelo_menos_uma_consulta_prenatal) / total_de_nascidos_vivos * 100, 1),
-          porc_7 = round(sum(mulheres_com_mais_de_sete_consultas_prenatal) / total_de_nascidos_vivos * 100, 1),
-          porc_sc = round(sum(casos_sc) / total_de_nascidos_vivos * 1000, 1),
-          class = dplyr::case_when(
-            filtros()$nivel2 == "Nacional" ~ "Brasil",
-            filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-            filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-            filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-            filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-            filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-            filtros()$nivel2 == "Municípios semelhantes" ~ "Média dos municípios semelhantes"
-          )
-        ) |>
-        dplyr::ungroup()
-    })
 
     #nome da localidade para os gráficos sem comparações
     local <- reactive({

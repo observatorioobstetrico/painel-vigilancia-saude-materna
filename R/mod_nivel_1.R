@@ -624,27 +624,13 @@ mod_nivel_1_ui <- function(id) {
   )
 }
 
-mod_nivel_1_server <- function(id, filtros){
+mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    ##### Criando o output que recebe a localidade e o ano escolhidos ####
     output$titulo_localidade <- renderUI({
-
-      ano <- filtros()$ano
-
-      texto <- dplyr::case_when(
-        filtros()$nivel == "Municipal" ~ glue::glue("({filtros()$municipio}, {ano})"),
-        filtros()$nivel == "Estadual" ~ glue::glue("({filtros()$estado}, {filtros()$ano})"),
-        filtros()$nivel == "Macrorregião de saúde" ~ glue::glue("({filtros()$macro}, {ano})"),
-        filtros()$nivel == "Microrregião de saúde" ~ glue::glue("({filtros()$micro}, {ano})"),
-        filtros()$nivel == "Regional" ~ glue::glue("({filtros()$regiao}, {ano})"),
-        filtros()$nivel == "Nacional" ~ glue::glue("(Brasil, {ano})")
-      )
-
-      tags$b(texto, style = "font-size: 33px")
+      titulo_localidade_aux()
     })
-
 
     ##### Criando os modais com as informações sobre os indicadores de cada bloco ####
     observeEvent(input$popup_b1, {

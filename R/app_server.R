@@ -7,14 +7,92 @@
 app_server <- function(input, output, session) {
 
   mod_documentacao_server("documentacao_1")
-  mod_nivel_1_server("nivel_1_1", filtros = filtros)
-  mod_bloco_1_server("bloco_1_1", filtros = filtros)
-  mod_bloco_2_server("bloco_2_1", filtros = filtros)
-  mod_bloco_3_server("bloco_3_1", filtros = filtros)
-  mod_bloco_4_server("bloco_4_1", filtros = filtros)
-  mod_bloco_5_server("bloco_5_1", filtros = filtros)
-  mod_bloco_6_server("bloco_6_1", filtros = filtros)
-  mod_nivel_3_server("nivel_3_1", filtros = filtros)
+  mod_nivel_1_server("nivel_1_1", filtros = filtros, titulo_localidade_aux = titulo_localidade_nivel1)
+  mod_bloco_1_server("bloco_1_1", filtros = filtros, titulo_localidade_aux = titulo_localidade_nivel2)
+  mod_bloco_2_server("bloco_2_1", filtros = filtros, titulo_localidade_aux = titulo_localidade_nivel2)
+  mod_bloco_3_server("bloco_3_1", filtros = filtros, titulo_localidade_aux = titulo_localidade_nivel2)
+  mod_bloco_4_server("bloco_4_1", filtros = filtros, titulo_localidade_aux = titulo_localidade_nivel2)
+  mod_bloco_5_server("bloco_5_1", filtros = filtros, titulo_localidade_aux = titulo_localidade_nivel2)
+  mod_bloco_6_server("bloco_6_1", filtros = filtros, titulo_localidade_aux = titulo_localidade_nivel2)
+  mod_nivel_3_server("nivel_3_1", filtros = filtros, titulo_localidade_aux = titulo_localidade_nivel3)
+
+
+  ##### Criando o objeto reativo que recebe o título da página ####
+  titulo_localidade_nivel1 <- eventReactive(input$pesquisar, {
+    ano <- input$ano
+
+    texto <- dplyr::case_when(
+      input$nivel == "Municipal" ~ glue::glue("({input$municipio}, {ano})"),
+      input$nivel == "Estadual" ~ glue::glue("({input$estado}, {input$ano})"),
+      input$nivel == "Macrorregião de saúde" ~ glue::glue("({input$macro}, {ano})"),
+      input$nivel == "Microrregião de saúde" ~ glue::glue("({input$micro}, {ano})"),
+      input$nivel == "Regional" ~ glue::glue("({input$regiao}, {ano})"),
+      input$nivel == "Nacional" ~ glue::glue("(Brasil, {ano})")
+    )
+
+    tags$b(texto, style = "font-size: 33px")
+  }, ignoreNULL = FALSE)
+
+  titulo_localidade_nivel2 <- eventReactive(input$pesquisar, {
+    if (length(input$ano2[1]:input$ano2[2]) > 1) {
+      ano <- glue::glue("{input$ano2[1]} a {input$ano2[2]}")
+    } else {
+      ano <- input$ano2[1]
+    }
+
+    if (input$comparar == "Não") {
+      local1 <- dplyr::case_when(
+        input$nivel == "Nacional" ~ "Brasil",
+        input$nivel == "Regional" ~ input$regiao,
+        input$nivel == "Estadual" ~ input$estado,
+        input$nivel == "Macrorregião de saúde" ~ input$macro,
+        input$nivel == "Microrregião de saúde" ~ input$micro,
+        input$nivel == "Municipal" ~ input$municipio
+      )
+      texto <- glue::glue("({local1}, {ano})")
+    } else {
+      local1 <- dplyr::case_when(
+        input$nivel == "Nacional" ~ "Brasil",
+        input$nivel == "Regional" ~ input$regiao,
+        input$nivel == "Estadual" ~ input$estado,
+        input$nivel == "Macrorregião de saúde" ~ input$macro,
+        input$nivel == "Microrregião de saúde" ~ input$micro,
+        input$nivel == "Municipal" ~ input$municipio
+      )
+      local2 <- dplyr::case_when(
+        input$nivel2 == "Nacional" ~ "Brasil",
+        input$nivel2 == "Regional" ~ input$regiao2,
+        input$nivel2 == "Estadual" ~ input$estado2,
+        input$nivel2 == "Macrorregião de saúde" ~ input$macro2,
+        input$nivel2 == "Microrregião de saúde" ~ input$micro2,
+        input$nivel2 == "Municipal" ~ input$municipio2,
+        input$nivel2 == "Municípios semelhantes" ~ "municípios semelhantes"
+      )
+      texto <- glue::glue("({local1} e {local2}, {ano})")
+
+      tags$b(texto, style = "font-size: 33px")
+    }
+  }, ignoreNULL = FALSE)
+
+  titulo_localidade_nivel3 <- eventReactive(input$pesquisar, {
+    if (length(input$ano2[1]:input$ano2[2]) > 1) {
+      ano <- glue::glue("{input$ano2[1]} a {input$ano2[2]}")
+    } else {
+      ano <- input$ano2[1]
+    }
+
+    local1 <- dplyr::case_when(
+      input$nivel == "Nacional" ~ "Brasil",
+      input$nivel == "Regional" ~ input$regiao,
+      input$nivel == "Estadual" ~ input$estado,
+      input$nivel == "Macrorregião de saúde" ~ input$macro,
+      input$nivel == "Microrregião de saúde" ~ input$micro,
+      input$nivel == "Municipal" ~ input$municipio
+    )
+
+    tags$b(paste("-", input$indicador, glue::glue("({local1}, {ano})")), style = "font-size: 30px")
+  }, ignoreNULL = FALSE)
+
 
 
   output$label_nivel_comp <- renderUI({

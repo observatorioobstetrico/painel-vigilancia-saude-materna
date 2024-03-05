@@ -479,56 +479,15 @@ mod_bloco_6_ui <- function(id) {
 #' bloco_6 Server Functions
 #'
 #' @noRd
-mod_bloco_6_server <- function(id, filtros){
+mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-
-    # Códigos compartilhados para os dois blocos ------------------------------
-
-    ##### Criando o output que recebe a localidade e o ano escolhidos #####
     output$titulo_localidade <- renderUI({
-
-      if (length(filtros()$ano2[1]:filtros()$ano2[2]) > 1) {
-        ano <- glue::glue("{filtros()$ano2[1]} a {filtros()$ano2[2]}")
-      } else {
-        ano <- filtros()$ano2[1]
-      }
-
-      if (filtros()$comparar == "Não") {
-        local1 <- dplyr::case_when(
-          filtros()$nivel == "Nacional" ~ "Brasil",
-          filtros()$nivel == "Regional" ~ filtros()$regiao,
-          filtros()$nivel == "Estadual" ~ filtros()$estado,
-          filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-          filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-          filtros()$nivel == "Municipal" ~ filtros()$municipio
-        )
-        texto <- glue::glue("({local1}, {ano})")
-      } else {
-        local1 <- dplyr::case_when(
-          filtros()$nivel == "Nacional" ~ "Brasil",
-          filtros()$nivel == "Regional" ~ filtros()$regiao,
-          filtros()$nivel == "Estadual" ~ filtros()$estado,
-          filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-          filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-          filtros()$nivel == "Municipal" ~ filtros()$municipio
-        )
-        local2 <- dplyr::case_when(
-          filtros()$nivel2 == "Nacional" ~ "Brasil",
-          filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-          filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-          filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-          filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-          filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-          filtros()$nivel2 == "Municípios semelhantes" ~ "municípios semelhantes"
-        )
-        texto <- glue::glue("({local1} e {local2}, {ano})")
-      }
-
-      tags$b(texto, style = "font-size: 33px")
+      titulo_localidade_aux()
     })
 
+    # Códigos compartilhados para os dois blocos ------------------------------
 
     ##### Definindo as cores para os gráficos #####
     cols <- c("#2c115f", "#b73779", "#fc8961")
@@ -557,6 +516,27 @@ mod_bloco_6_server <- function(id, filtros){
       }
     })
 
+
+    # Criando um data.frame com os cálculos dos indicadores -------------------
+    bloco6_calcs <- data.frame(
+      tipo = c("local", "referencia"),
+      sum_obitos_mat_totais = rep("sum(obitos_mat_totais)", 2),
+      rmm = c("round(sum(obitos_mat_totais) / sum(nascidos) * 100000, 1)", "30"),
+      prop_obitos_diretos = rep("round(sum(obitos_mat_diretos) / sum(obitos_mat_totais) * 100, 1)", 2),
+      prop_obitos_aborto = rep("round(sum(obitos_mat_aborto) / sum(obitos_mat_diretos) * 100, 1)", 2),
+      prop_obitos_hipertens = rep("round(sum(obitos_mat_hipertensao) / sum(obitos_mat_diretos) * 100, 1)", 2),
+      prop_obitos_hemo = rep("round(sum(obitos_mat_hemorragia) / sum(obitos_mat_diretos) * 100, 1)", 2),
+      prop_obitos_infec = rep("round(sum(obitos_mat_infec_puerperal) / sum(obitos_mat_diretos) * 100, 1)", 2),
+      sum_casos_mmg = rep("sum(casos_mmg[ano <= 2020])", 2),
+      prop_mmg_int_publicas = rep("round(sum(casos_mmg[ano <= 2020]) / sum(total_internacoes[ano <= 2020]) * 100, 1)", 2),
+      prop_mmg_hipertensao = rep("round(sum(casos_mmg_hipertensao[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
+      prop_mmg_hemorragia = rep("round(sum(casos_mmg_hemorragia[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
+      prop_mmg_infeccao = rep("round(sum(casos_mmg_infeccoes[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
+      prop_mmg_uti = rep("round(sum(casos_mmg_uti[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
+      prop_mmg_tmp = rep("round(sum(casos_mmg_tmp[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
+      prop_mmg_transfusao = rep("round(sum(casos_mmg_transfusao[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
+      prop_mmg_cirurgia = rep("round(sum(casos_mmg_cirurgia[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2)
+    )
 
 
     data6_resumo <- reactive({
@@ -597,24 +577,8 @@ mod_bloco_6_server <- function(id, filtros){
           else if (nivel_selecionado() == "Municípios semelhantes")
             grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
         ) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(nascidos),
-          obitos_mat_totais = sum(obitos_mat_totais),
-          rmm = round(sum(obitos_mat_totais)/total_de_nascidos_vivos * 100000, 1),
-          prop_obitos_diretos = round(sum(obitos_mat_diretos)/obitos_mat_totais * 100, 1),
-          prop_obitos_aborto = round(sum(obitos_mat_aborto)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_hipertens = round(sum(obitos_mat_hipertensao)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_hemo = round(sum(obitos_mat_hemorragia)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_infec = round(sum(obitos_mat_infec_puerperal)/sum(obitos_mat_diretos) * 100, 1),
-          casos_mmg = sum(casos_mmg[ano <= 2020]),
-          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes[ano <= 2020]) * 100, 1),
-          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_uti = round(sum(casos_mmg_uti[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_tmp = round(sum(casos_mmg_tmp[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_transfusao = round(sum(casos_mmg_transfusao[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia[ano <= 2020])/casos_mmg * 100, 1),
+        cria_indicadores(df_calcs = bloco6_calcs, filtros = filtros(), adicionar_localidade = FALSE) |>
+        dplyr::mutate(
           localidade = dplyr::case_when(
             nivel_selecionado() == "Nacional" ~ "Brasil",
             nivel_selecionado() == "Regional" ~ filtros()[[paste0("regiao", sufixo_inputs)]],
@@ -623,8 +587,7 @@ mod_bloco_6_server <- function(id, filtros){
             nivel_selecionado() == "Microrregião de saúde" ~ filtros()[[paste0("micro", sufixo_inputs)]],
             nivel_selecionado() == "Municipal" ~ filtros()[[paste0("municipio", sufixo_inputs)]]
           )
-        ) |>
-        dplyr::ungroup()
+        )
     })
 
 
@@ -632,26 +595,7 @@ mod_bloco_6_server <- function(id, filtros){
     data6_resumo_referencia <- reactive({
       bloco6 |>
         dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(nascidos),
-          obitos_mat_totais = sum(obitos_mat_totais),
-          rmm = 30,
-          prop_obitos_diretos = round(sum(obitos_mat_diretos)/obitos_mat_totais * 100, 1),
-          prop_obitos_aborto = round(sum(obitos_mat_aborto)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_hipertens = round(sum(obitos_mat_hipertensao)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_hemo = round(sum(obitos_mat_hemorragia)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_infec = round(sum(obitos_mat_infec_puerperal)/sum(obitos_mat_diretos) * 100, 1),
-          casos_mmg = sum(casos_mmg[ano <= 2020]),
-          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes[ano <= 2020]) * 100, 1),
-          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_uti = round(sum(casos_mmg_uti[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_tmp = round(sum(casos_mmg_tmp[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_transfusao = round(sum(casos_mmg_transfusao[ano <= 2020])/casos_mmg * 100, 1),
-          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia[ano <= 2020])/casos_mmg * 100, 1)
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco6_calcs, filtros = filtros())
     })
 
 
@@ -674,42 +618,7 @@ mod_bloco_6_server <- function(id, filtros){
             municipio == filtros()$municipio & uf == filtros()$estado_municipio
         ) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(nascidos),
-          obitos_mat_totais = sum(obitos_mat_totais),
-          rmm = round(sum(obitos_mat_totais)/total_de_nascidos_vivos * 100000, 1),
-          prop_obitos_diretos = round(sum(obitos_mat_diretos)/obitos_mat_totais * 100, 1),
-          prop_obitos_aborto = round(sum(obitos_mat_aborto)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_hipertens = round(sum(obitos_mat_hipertensao)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_hemo = round(sum(obitos_mat_hemorragia)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_infec = round(sum(obitos_mat_infec_puerperal)/sum(obitos_mat_diretos) * 100, 1),
-          casos_mmg = sum(casos_mmg),
-          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes) * 100, 1),
-          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao)/casos_mmg * 100, 1),
-          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia)/casos_mmg * 100, 1),
-          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes)/casos_mmg * 100, 1),
-          prop_mmg_uti = round(sum(casos_mmg_uti)/casos_mmg * 100, 1),
-          prop_mmg_tmp = round(sum(casos_mmg_tmp)/casos_mmg * 100, 1),
-          prop_mmg_transfusao = round(sum(casos_mmg_transfusao)/casos_mmg * 100, 1),
-          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia)/casos_mmg * 100, 1),
-          class = dplyr::case_when(
-            filtros()$nivel == "Nacional" ~ dplyr::if_else(
-              filtros()$comparar == "Não",
-              "Brasil (valor de referência)",
-              dplyr::if_else(
-                filtros()$mostrar_referencia == "nao_mostrar_referencia",
-                "Brasil",
-                "Brasil (valor de referência)"
-              )
-            ),
-            filtros()$nivel == "Regional" ~ filtros()$regiao,
-            filtros()$nivel == "Estadual" ~ filtros()$estado,
-            filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-            filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
-            filtros()$nivel == "Municipal" ~ filtros()$municipio
-          )
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco6_calcs, filtros = filtros())
     })
 
 
@@ -734,43 +643,7 @@ mod_bloco_6_server <- function(id, filtros){
             grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
         ) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(nascidos),
-          obitos_mat_totais = sum(obitos_mat_totais),
-          rmm = round(sum(obitos_mat_totais)/total_de_nascidos_vivos * 100000, 1),
-          prop_obitos_diretos = round(sum(obitos_mat_diretos)/obitos_mat_totais * 100, 1),
-          prop_obitos_aborto = round(sum(obitos_mat_aborto)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_hipertens = round(sum(obitos_mat_hipertensao)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_hemo = round(sum(obitos_mat_hemorragia)/sum(obitos_mat_diretos) * 100, 1),
-          prop_obitos_infec = round(sum(obitos_mat_infec_puerperal)/sum(obitos_mat_diretos) * 100, 1),
-          casos_mmg = sum(casos_mmg),
-          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes) * 100, 1),
-          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao)/casos_mmg * 100, 1),
-          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia)/casos_mmg * 100, 1),
-          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes)/casos_mmg * 100, 1),
-          prop_mmg_uti = round(sum(casos_mmg_uti)/casos_mmg * 100, 1),
-          prop_mmg_tmp = round(sum(casos_mmg_tmp)/casos_mmg * 100, 1),
-          prop_mmg_transfusao = round(sum(casos_mmg_transfusao)/casos_mmg * 100, 1),
-          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia)/casos_mmg * 100, 1),
-          class = dplyr::case_when(
-            filtros()$nivel2 == "Nacional" ~ dplyr::if_else(
-              filtros()$comparar == "Não",
-              "Brasil (valor de referência)",
-              dplyr::if_else(
-                filtros()$mostrar_referencia == "nao_mostrar_referencia",
-                "Brasil",
-                "Brasil (valor de referência)"
-              )
-            ),
-            filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-            filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-            filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-            filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-            filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-            filtros()$nivel2 == "Municípios semelhantes" ~ "Média dos municípios semelhantes"
-          )
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco6_calcs, filtros = filtros(), comp = TRUE)
     })
 
 
@@ -779,27 +652,7 @@ mod_bloco_6_server <- function(id, filtros){
       bloco6 |>
         dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(
-          total_de_nascidos_vivos = sum(nascidos),
-          obitos_mat_totais = sum(obitos_mat_totais),
-          rmm = 30,
-          prop_obitos_diretos = round(sum(obitos_mat_diretos)/obitos_mat_totais * 100, 1),
-          prop_obitos_aborto = round(sum(obitos_mat_aborto)/sum(obitos_mat_diretos)*100, 1),
-          prop_obitos_hipertens = round(sum(obitos_mat_hipertensao)/sum(obitos_mat_diretos)*100, 1),
-          prop_obitos_hemo = round(sum(obitos_mat_hemorragia)/sum(obitos_mat_diretos)*100, 1),
-          prop_obitos_infec = round(sum(obitos_mat_infec_puerperal)/sum(obitos_mat_diretos)*100, 1),
-          casos_mmg = sum(casos_mmg),
-          prop_mmg_int_publicas = round(casos_mmg/sum(total_internacoes) * 100, 1),
-          prop_mmg_hipertensao = round(sum(casos_mmg_hipertensao)/casos_mmg * 100, 1),
-          prop_mmg_hemorragia = round(sum(casos_mmg_hemorragia)/casos_mmg * 100, 1),
-          prop_mmg_infeccao = round(sum(casos_mmg_infeccoes)/casos_mmg * 100, 1),
-          prop_mmg_uti = round(sum(casos_mmg_uti)/casos_mmg * 100, 1),
-          prop_mmg_tmp = round(sum(casos_mmg_tmp)/casos_mmg * 100, 1),
-          prop_mmg_transfusao = round(sum(casos_mmg_transfusao)/casos_mmg * 100, 1),
-          prop_mmg_cirurgia = round(sum(casos_mmg_cirurgia)/casos_mmg * 100, 1),
-          class = "Referência"
-        ) |>
-        dplyr::ungroup()
+        cria_indicadores(df_calcs = bloco6_calcs, filtros = filtros(), referencia = TRUE)
     })
 
 
@@ -934,7 +787,7 @@ mod_bloco_6_server <- function(id, filtros){
 
     observeEvent(filtros()$pesquisar, {
       shinyjs::hide(id = "mostrar_botao3", anim = TRUE, animType = "fade", time = 0.8)
-      req((sum(data6()$obitos_mat_totais) != 0) & (any(data_incompletude()$prop_mif_investigado < 90, na.rm = TRUE) | any(data_incompletude()$prop_obito_materno_investigado < 100, na.rm = TRUE) | any(data_incompletude()$cobertura < 90, na.rm = TRUE)))
+      req((sum(data6()$sum_obitos_mat_totais) != 0) & (any(data_incompletude()$prop_mif_investigado < 90, na.rm = TRUE) | any(data_incompletude()$prop_obito_materno_investigado < 100, na.rm = TRUE) | any(data_incompletude()$cobertura < 90, na.rm = TRUE)))
       shinyjs::show(id = "mostrar_botao3", anim = TRUE, animType = "fade", time = 0.8)
     },
     ignoreNULL = FALSE
@@ -952,7 +805,7 @@ mod_bloco_6_server <- function(id, filtros){
 
     observeEvent(filtros()$pesquisar, {
       shinyjs::hide(id = "mostrar_botao4", anim = TRUE, animType = "fade", time = 0.8)
-      req((sum(data6()$obitos_mat_totais) != 0) & (any(data_incompletude()$prop_mif_investigado < 90, na.rm = TRUE) | any(data_incompletude()$prop_obito_materno_investigado < 100, na.rm = TRUE) | any(data_incompletude()$cobertura < 90, na.rm = TRUE)))
+      req((sum(data6()$sum_obitos_mat_totais) != 0) & (any(data_incompletude()$prop_mif_investigado < 90, na.rm = TRUE) | any(data_incompletude()$prop_obito_materno_investigado < 100, na.rm = TRUE) | any(data_incompletude()$cobertura < 90, na.rm = TRUE)))
       shinyjs::show(id = "mostrar_botao4", anim = TRUE, animType = "fade", time = 0.8)
     },
     ignoreNULL = FALSE
@@ -1319,10 +1172,10 @@ mod_bloco_6_server <- function(id, filtros){
     output$caixa_b6_mort_i1 <- renderUI({
       cria_caixa_server(
         dados = data6_resumo(),
-        indicador = "obitos_mat_totais",
+        indicador = "sum_obitos_mat_totais",
         titulo = "Número de óbitos maternos",
         tem_meta = FALSE,
-        valor_de_referencia = data6_resumo_referencia()$obitos_mat_totais,
+        valor_de_referencia = data6_resumo_referencia()$sum_obitos_mat_totais,
         tipo = "número",
         invertido = FALSE,
         cor = "lightgrey",
@@ -1464,7 +1317,7 @@ mod_bloco_6_server <- function(id, filtros){
           highcharter::hc_add_series(
             data = data6_obitos_mat,
             type = "line",
-            highcharter::hcaes(x = ano, y = obitos_mat_totais, group = class, colour = class)
+            highcharter::hcaes(x = ano, y = sum_obitos_mat_totais, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
           highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
@@ -1475,12 +1328,12 @@ mod_bloco_6_server <- function(id, filtros){
           highcharter::hc_add_series(
             data = data6_obitos_mat,
             type = "line",
-            highcharter::hcaes(x = ano, y = obitos_mat_totais, group = class, colour = class)
+            highcharter::hcaes(x = ano, y = sum_obitos_mat_totais, group = class, colour = class)
           ) |>
           highcharter::hc_add_series(
             data = data6_comp_obitos_mat,
             type = "line",
-            highcharter::hcaes(x = ano, y = obitos_mat_totais, group = class, colour = class)
+            highcharter::hcaes(x = ano, y = sum_obitos_mat_totais, group = class, colour = class)
           ) |>
           highcharter::hc_tooltip(valueSuffix = "", shared = TRUE, sort = TRUE) |>
           highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
@@ -1553,7 +1406,7 @@ mod_bloco_6_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         validate(
           need(
-            sum(data6()$obitos_mat_totais) != 0,
+            sum(data6()$sum_obitos_mat_totais) != 0,
             "Não foram registrados óbitos maternos no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -1583,7 +1436,7 @@ mod_bloco_6_server <- function(id, filtros){
       } else {
         validate(
           need(
-            sum(data6()$obitos_mat_totais) != 0 | sum(data6_comp()$obitos_mat_totais) != 0,
+            sum(data6()$sum_obitos_mat_totais) != 0 | sum(data6_comp()$sum_obitos_mat_totais) != 0,
             "Não foram registrados óbitos maternos no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -1645,7 +1498,7 @@ mod_bloco_6_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         validate(
           need(
-            sum(data6()$obitos_mat_totais) != 0,
+            sum(data6()$sum_obitos_mat_totais) != 0,
             "Não foram registrados óbitos maternos no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -1675,7 +1528,7 @@ mod_bloco_6_server <- function(id, filtros){
       } else {
         validate(
           need(
-            sum(data6()$obitos_mat_totais) != 0 | sum(data6_comp()$obitos_mat_totais) != 0,
+            sum(data6()$sum_obitos_mat_totais) != 0 | sum(data6_comp()$sum_obitos_mat_totais) != 0,
             "Não foram registrados óbitos maternos no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -1955,7 +1808,7 @@ mod_bloco_6_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         validate(
           need(
-            data6()$casos_mmg != 0,
+            data6()$sum_casos_mmg != 0,
             "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -1985,7 +1838,7 @@ mod_bloco_6_server <- function(id, filtros){
       } else {
         validate(
           need(
-            data6()$casos_mmg != 0 | data6_comp()$casos_mmg != 0,
+            data6()$sum_casos_mmg != 0 | data6_comp()$sum_casos_mmg != 0,
             "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -2025,7 +1878,7 @@ mod_bloco_6_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         validate(
           need(
-            data6()$casos_mmg != 0,
+            data6()$sum_casos_mmg != 0,
             "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -2054,7 +1907,7 @@ mod_bloco_6_server <- function(id, filtros){
         }
       } else {
         need(
-          data6()$casos_mmg != 0 | data6_comp()$casos_mmg != 0,
+          data6()$sum_casos_mmg != 0 | data6_comp()$sum_casos_mmg != 0,
           "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
         )
         grafico_base <- highcharter::highchart() |>
@@ -2092,7 +1945,7 @@ mod_bloco_6_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         validate(
           need(
-            data6()$casos_mmg != 0,
+            data6()$sum_casos_mmg != 0,
             "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -2121,7 +1974,7 @@ mod_bloco_6_server <- function(id, filtros){
         }
       } else {
         need(
-          data6()$casos_mmg != 0 | data6_comp()$casos_mmg != 0,
+          data6()$sum_casos_mmg != 0 | data6_comp()$sum_casos_mmg != 0,
           "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
         )
         grafico_base <- highcharter::highchart() |>
@@ -2159,7 +2012,7 @@ mod_bloco_6_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         validate(
           need(
-            data6()$casos_mmg != 0,
+            data6()$sum_casos_mmg != 0,
             "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -2188,7 +2041,7 @@ mod_bloco_6_server <- function(id, filtros){
         }
       } else {
         need(
-          data6()$casos_mmg != 0 | data6_comp()$casos_mmg != 0,
+          data6()$sum_casos_mmg != 0 | data6_comp()$sum_casos_mmg != 0,
           "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
         )
         grafico_base <- highcharter::highchart() |>
@@ -2226,7 +2079,7 @@ mod_bloco_6_server <- function(id, filtros){
       if (filtros()$comparar == "Não") {
         validate(
           need(
-            data6()$casos_mmg != 0,
+            data6()$sum_casos_mmg != 0,
             "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
           )
         )
@@ -2255,7 +2108,7 @@ mod_bloco_6_server <- function(id, filtros){
         }
       } else {
         need(
-          data6()$casos_mmg != 0 | data6_comp()$casos_mmg != 0,
+          data6()$sum_casos_mmg != 0 | data6_comp()$sum_casos_mmg != 0,
           "Não foram registrados casos de morbidade materna grave no período. Dessa forma, este indicador não se aplica."
         )
         grafico_base <- highcharter::highchart() |>
