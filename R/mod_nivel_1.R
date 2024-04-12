@@ -918,7 +918,7 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
 
     data_cobertura <- reactive({
       if (filtros()$nivel == "Municipal") {
-        base_cobertura_muni_2015_2020 |>
+        base_cobertura_muni |>
           dplyr::filter(
             ano == dplyr::if_else(
               filtros()$ano %in% c(2012, 2013, 2014),
@@ -935,7 +935,7 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
             localidade = municipio
           )
       } else if (filtros()$nivel == "Estadual") {
-        base_cobertura_uf_regioes_2015_2020 |>
+        base_cobertura_uf_regioes |>
           dplyr::filter(
             ano == dplyr::if_else(
               filtros()$ano %in% c(2012, 2013, 2014),
@@ -948,7 +948,7 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
             ano = filtros()$ano
           )
       } else if (filtros()$nivel == "Regional") {
-        base_cobertura_uf_regioes_2015_2020 |>
+        base_cobertura_uf_regioes |>
           dplyr::filter(
             ano == dplyr::if_else(
               filtros()$ano %in% c(2012, 2013, 2014),
@@ -961,7 +961,7 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
             ano = filtros()$ano
           )
       } else if (filtros()$nivel == "Nacional") {
-        base_cobertura_uf_regioes_2015_2020 |>
+        base_cobertura_uf_regioes |>
           dplyr::filter(
             ano == dplyr::if_else(
               filtros()$ano %in% c(2012, 2013, 2014),

@@ -541,7 +541,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
       if (infos_indicador()$bloco == "bloco6") {
         if (infos_indicador()$nome_abreviado == "rmm" & input$sistema_cobertura == "SINASC") {
           if (filtros()$nivel == "Municipal") {
-            sub_registro_sinasc_muni_2015_2020 |>
+            sub_registro_sinasc_muni |>
               dplyr::filter(
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
                 municipio == filtros()$municipio,
@@ -551,19 +551,19 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
                 localidade = municipio
               )
           } else if (filtros()$nivel == "Estadual") {
-            sub_registro_sinasc_uf_regioes_2015_2020 |>
+            sub_registro_sinasc_uf_regioes |>
               dplyr::filter(
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
                 localidade == filtros()$estado
               )
           } else if (filtros()$nivel == "Regional") {
-            sub_registro_sinasc_uf_regioes_2015_2020 |>
+            sub_registro_sinasc_uf_regioes |>
               dplyr::filter(
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
                 localidade == filtros()$regiao
               )
           } else if (filtros()$nivel == "Nacional") {
-            sub_registro_sinasc_uf_regioes_2015_2020 |>
+            sub_registro_sinasc_uf_regioes |>
               dplyr::filter(
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
                 localidade == "Brasil"
@@ -584,7 +584,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
           }
         } else {
           if (filtros()$nivel == "Municipal") {
-            sub_registro_sim_muni_2015_2020 |>
+            sub_registro_sim_muni |>
               dplyr::filter(
                 ano >= max(2015, filtros()$ano2[1]) & ano <= filtros()$ano2[2],
                 municipio == filtros()$municipio,
@@ -594,19 +594,19 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
                 localidade = municipio
               )
           } else if (filtros()$nivel == "Estadual") {
-            sub_registro_sim_uf_regioes_2015_2020 |>
+            sub_registro_sim_uf_regioes |>
               dplyr::filter(
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
                 localidade == filtros()$estado
               )
           } else if (filtros()$nivel == "Regional") {
-            sub_registro_sim_uf_regioes_2015_2020 |>
+            sub_registro_sim_uf_regioes |>
               dplyr::filter(
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
                 localidade == filtros()$regiao
               )
           } else if (filtros()$nivel == "Nacional") {
-            sub_registro_sim_uf_regioes_2015_2020 |>
+            sub_registro_sim_uf_regioes |>
               dplyr::filter(
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
                 localidade == "Brasil"
@@ -628,7 +628,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
         }
       } else {
         if (filtros()$nivel == "Municipal") {
-          sub_registro_sinasc_muni_2015_2020 |>
+          sub_registro_sinasc_muni |>
             dplyr::filter(
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
               municipio == filtros()$municipio,
@@ -638,19 +638,19 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
               localidade = municipio
             )
         } else if (filtros()$nivel == "Estadual") {
-          sub_registro_sinasc_uf_regioes_2015_2020 |>
+          sub_registro_sinasc_uf_regioes |>
             dplyr::filter(
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
               localidade == filtros()$estado
             )
         } else if (filtros()$nivel == "Regional") {
-          sub_registro_sinasc_uf_regioes_2015_2020 |>
+          sub_registro_sinasc_uf_regioes |>
             dplyr::filter(
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
               localidade == filtros()$regiao
             )
         } else if (filtros()$nivel == "Nacional") {
-          sub_registro_sinasc_uf_regioes_2015_2020 |>
+          sub_registro_sinasc_uf_regioes |>
             dplyr::filter(
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
               localidade == "Brasil"
@@ -958,8 +958,6 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
           data_grafico_serie_aux
         }
     })
-
-    observe(print(data_grafico_serie()))
 
     data_fator_de_correcao <- reactive({
       if (infos_indicador()$nome_abreviado == "rmm") {
@@ -1341,7 +1339,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
           highcharter::hcaes(x = ano, y = cobertura, group = localidade, colour = localidade)
         ) |>
         highcharter::hc_add_series(
-          data = data_referencia_cobertura() |> dplyr::filter(ano <= 2020),
+          data = data_referencia_cobertura() |> dplyr::filter(ano <= 2021),
           type = "line",
           highcharter::hcaes(x = ano, y = referencia, group = localidade, colour = localidade),
           dashStyle = "ShortDot",
