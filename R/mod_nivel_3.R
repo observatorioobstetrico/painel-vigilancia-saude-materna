@@ -1110,7 +1110,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
 
     data_referencia_baixo_peso <- reactive({
       data.frame(
-        ano = ano %in% anos_disponiveis(),
+        ano = anos_disponiveis(),
         porc_baixo_peso = data_referencia_baixo_peso_aux()$porc_baixo_peso,
         class = "Referência"
       )
