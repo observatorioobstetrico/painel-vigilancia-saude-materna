@@ -271,7 +271,22 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
     ns <- session$ns
 
     output$titulo_localidade <- renderUI({
-      titulo_localidade_aux()
+      if (length(filtros()$ano2[1]:filtros()$ano2[2]) > 1) {
+        ano <- glue::glue("{filtros()$ano2[1]} a {filtros()$ano2[2]}")
+      } else {
+        ano <- filtros()$ano2[1]
+      }
+
+      local1 <- dplyr::case_when(
+        filtros()$nivel == "Nacional" ~ "Brasil",
+        filtros()$nivel == "Regional" ~ filtros()$regiao,
+        filtros()$nivel == "Estadual" ~ filtros()$estado,
+        filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
+        filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
+        filtros()$nivel == "Municipal" ~ filtros()$municipio
+      )
+
+      tags$b(paste("-", infos_indicador()$indicador, glue::glue("({local1}, {ano})")), style = "font-size: 30px")
     })
 
     #cores pros graficos
@@ -477,14 +492,14 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
 
     ##### Buscando as informações do indicador selecionado na tabela_indicadores #####
     infos_indicador <- reactive({
-      if (!(filtros()$bloco %in% c("bloco4", "bloco6"))) {
-        tabela_indicadores |>
-          dplyr::filter(indicador == filtros()$indicador)
-      } else {
+      if (filtros()$bloco %in% c("bloco4", "bloco6")) {
         tabela_indicadores |>
           dplyr::filter(indicador == filtros()$indicador_blocos4_6)
-      }
 
+      } else {
+        tabela_indicadores |>
+          dplyr::filter(indicador == filtros()$indicador)
+      }
     })
 
     anos_disponiveis <- reactive({
