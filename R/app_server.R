@@ -220,6 +220,7 @@ Silhueta e Calinski-Harabasz, o número de grupos adotado foi 3. </div>",
       server = FALSE
     )
 
+
     if (input$bloco == "bloco4") {
       updateSelectizeInput(
         session,
@@ -237,6 +238,13 @@ Silhueta e Calinski-Harabasz, o número de grupos adotado foi 3. </div>",
           "Relacionados à mortalidade materna" = "mortalidade",
           "Relacionados à morbidade materna" = "morbidade"
         )
+      )
+    } else if (input$bloco == "bloco5") {
+      updateSelectizeInput(
+        session,
+        inputId = "indicador",
+        choices = c("Porcentagem de nascidos vivos com baixo peso ao nascer", "Porcentagem de nascidos vivos prematuros", "Porcentagem de nascidos vivos a termo precoce"),
+        server = FALSE
       )
     }
   })
