@@ -2232,7 +2232,6 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
     data6 <- reactive({
       bloco6 |>
         dplyr::filter(ano == filtros()$ano) |>
-        #if(filtros()$nivel == "Estadual") dplyr::filter(uf==filtros()$estado)
         dplyr::filter(
           if (filtros()$nivel == "Nacional")
             ano == filtros()$ano
@@ -2273,27 +2272,35 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
     data6_fator_de_correcao <- reactive({
       if (filtros()$nivel %in% c("Estadual", "Regional", "Nacional")) {
         if (filtros()$nivel == "Estadual") {
-          rmm_fator_de_correcao |>
+          rmm_corrigida |>
             dplyr::filter(
               localidade == filtros()$estado,
               ano == filtros()$ano
+            ) |>
+            dplyr::mutate(
+              ano = filtros()$ano
             )
         } else if (filtros()$nivel == "Regional") {
-          rmm_fator_de_correcao |>
+          rmm_corrigida |>
             dplyr::filter(
               localidade == filtros()$regiao,
               ano == filtros()$ano
+            ) |>
+            dplyr::mutate(
+              ano = filtros()$ano
             )
         } else {
-          rmm_fator_de_correcao |>
+          rmm_corrigida |>
             dplyr::filter(
               localidade == "Brasil",
               ano == filtros()$ano
+            ) |>
+            dplyr::mutate(
+              ano = filtros()$ano
             )
         }
       } else {
         data.frame(
-          fator_de_correcao = 1,
           ano = filtros()$ano,
           localidade = dplyr::case_when(
             filtros()$nivel == "Nacional" ~ "Brasil",
@@ -2312,12 +2319,19 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
     })
 
     data6_rmm_corrigida <- reactive({
-      data6_rmm_corrigida_aux() |>
-        dplyr::mutate(
-          rmm = round(rmm*fator_de_correcao, 1)
-        )
-    })
+      if(filtros()$nivel %in% c("Nacional", "Regional", "Estadual")){
+        data6_rmm_corrigida_aux() |>
+          dplyr::mutate(
+            rmm_c = RMM
+          )
+      } else {
+        data6_rmm_corrigida_aux() |>
+          dplyr::mutate(
+            rmm_c = rmm
+          )
+      }
 
+    })
 
     ##### Dados do sexto bloco para a comparação com o Brasil #####
     data6_comp <- reactive({
@@ -2372,7 +2386,7 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
     output$caixa_b6_mort_i2 <- renderUI({
       cria_caixa_server(
         dados = data6_rmm_corrigida(),
-        indicador = "rmm",
+        indicador = "rmm_c",
         titulo = "Razão de mortalidade materna por 100.000 nascidos vivos",
         tem_meta = TRUE,
         valor_de_referencia = 30,

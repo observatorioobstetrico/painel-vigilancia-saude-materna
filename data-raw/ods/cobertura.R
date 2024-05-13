@@ -93,6 +93,20 @@ sub_registro_sinasc_muni2021 <- readODS::read_ods("data-raw/ods/sub_registro_sin
     .before = uf
   )
 
+sub_registro_sinasc_muni2022 <- readODS::read_ods("data-raw/ods/sub_registro_sinasc_muni_2022.ods") |>
+  janitor::clean_names() |>
+  dplyr::select(
+    uf = nome_uf,
+    codmunres = codigo_municipio,
+    municipio = nome_municipio,
+    sub_notificacao_ms_sinasc = sub_notificacao_ms
+  ) |>
+  dplyr::mutate(
+    ano = 2022,
+    codmunres = gsub(".{1}$", "", codmunres),
+    .before = uf
+  )
+
 sub_registro_sinasc_muni <- rbind(
   sub_registro_sinasc_muni2015,
   sub_registro_sinasc_muni2016,
@@ -100,7 +114,8 @@ sub_registro_sinasc_muni <- rbind(
   sub_registro_sinasc_muni2018,
   sub_registro_sinasc_muni2019,
   sub_registro_sinasc_muni2020,
-  sub_registro_sinasc_muni2021
+  sub_registro_sinasc_muni2021,
+  sub_registro_sinasc_muni2022
 )
 
 sub_registro_sinasc_muni$sub_notificacao_ms_sinasc <- round(as.numeric(sub_registro_sinasc_muni$sub_notificacao_ms_sinasc), 1)
@@ -205,6 +220,20 @@ sub_registro_sim_muni2021 <- readODS::read_ods("data-raw/ods/sub_registro_sim_mu
     .before = uf
   )
 
+sub_registro_sim_muni2022 <- readODS::read_ods("data-raw/ods/sub_registro_sim_muni_2022.ods") |>
+  janitor::clean_names() |>
+  dplyr::select(
+    uf = nome_uf,
+    codmunres = codigo_municipio,
+    municipio = nome_municipio,
+    sub_notificacao_ms_sim = sub_notificacao_ms_percent
+  ) |>
+  dplyr::mutate(
+    ano = 2022,
+    codmunres = gsub(".{1}$", "", codmunres),
+    .before = uf
+  )
+
 sub_registro_sim_muni <- rbind(
   sub_registro_sim_muni2015,
   sub_registro_sim_muni2016,
@@ -212,7 +241,8 @@ sub_registro_sim_muni <- rbind(
   sub_registro_sim_muni2018,
   sub_registro_sim_muni2019,
   sub_registro_sim_muni2020,
-  sub_registro_sim_muni2021
+  sub_registro_sim_muni2021,
+  sub_registro_sim_muni2022
 )
 
 sub_registro_sim_muni$sub_notificacao_ms <- round(as.numeric(sub_registro_sim_muni$sub_notificacao_ms), 1)
@@ -318,6 +348,20 @@ sub_registro_sinasc_uf_regioes2021 <- readODS::read_ods("data-raw/ods/sub_regist
     localidade != "Ignorado"
   )
 
+sub_registro_sinasc_uf_regioes2022 <- readODS::read_ods("data-raw/ods/sub_registro_sinasc_uf_regioes_2022.ods") |>
+  janitor::clean_names() |>
+  dplyr::select(
+    localidade = nome_uf,
+    sub_notificacao_ms_sinasc = sub_notificacao_ms_percent
+  ) |>
+  dplyr::mutate(
+    ano = 2022,
+    .before = localidade
+  ) |>
+  dplyr::filter(
+    localidade != "Ignorado"
+  )
+
 sub_registro_sinasc_uf_regioes <- rbind(
   sub_registro_sinasc_uf_regioes2015,
   sub_registro_sinasc_uf_regioes2016,
@@ -325,7 +369,8 @@ sub_registro_sinasc_uf_regioes <- rbind(
   sub_registro_sinasc_uf_regioes2018,
   sub_registro_sinasc_uf_regioes2019,
   sub_registro_sinasc_uf_regioes2020,
-  sub_registro_sinasc_uf_regioes2021
+  sub_registro_sinasc_uf_regioes2021,
+  sub_registro_sinasc_uf_regioes2022
 )
 
 sub_registro_sinasc_uf_regioes$sub_notificacao_ms <- round(as.numeric(sub_registro_sinasc_uf_regioes$sub_notificacao_ms), 1)
@@ -424,6 +469,20 @@ sub_registro_sim_uf_regioes2021 <- readODS::read_ods("data-raw/ods/sub_registro_
     localidade != "Ignorado"
   )
 
+sub_registro_sim_uf_regioes2022 <- readODS::read_ods("data-raw/ods/sub_registro_sim_uf_regioes_2022.ods") |>
+  janitor::clean_names() |>
+  dplyr::select(
+    localidade = nome_uf,
+    sub_notificacao_ms_sim = sub_notificacao_ms_percent
+  ) |>
+  dplyr::mutate(
+    ano = 2022,
+    .before = localidade
+  ) |>
+  dplyr::filter(
+    localidade != "Ignorado"
+  )
+
 sub_registro_sim_uf_regioes <- rbind(
   sub_registro_sim_uf_regioes2015,
   sub_registro_sim_uf_regioes2016,
@@ -431,7 +490,8 @@ sub_registro_sim_uf_regioes <- rbind(
   sub_registro_sim_uf_regioes2018,
   sub_registro_sim_uf_regioes2019,
   sub_registro_sim_uf_regioes2020,
-  sub_registro_sim_uf_regioes2021
+  sub_registro_sim_uf_regioes2021,
+  sub_registro_sim_uf_regioes2022
 )
 
 sub_registro_sim_uf_regioes$sub_notificacao_ms <- round(as.numeric(sub_registro_sim_uf_regioes$sub_notificacao_ms), 1)
