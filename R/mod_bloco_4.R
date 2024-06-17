@@ -1038,39 +1038,11 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
     data4_referencia <- reactive({
       bloco4 |>
         dplyr::filter(ano >= max(filtros()$ano2[1], 2014) & ano <= filtros()$ano2[2]) |>
-        dplyr::filter(
-          if (filtros()$nivel2 == "Nacional")
-            ano >= max(filtros()$ano2[1], 2014) & ano <= filtros()$ano2[2]
-          else if (filtros()$nivel2 == "Regional")
-            regiao == filtros()$regiao2
-          else if (filtros()$nivel2 == "Estadual")
-            uf == filtros()$estado2
-          else if (filtros()$nivel2 == "Macrorregião de saúde")
-            macro_r_saude == filtros()$macro2 & uf == filtros()$estado_macro2
-          else if(filtros()$nivel2 == "Microrregião de saúde")
-            r_saude == filtros()$micro2 & uf == filtros()$estado_micro2
-          else if(filtros()$nivel2 == "Municipal")
-            municipio == filtros()$municipio2 & uf == filtros()$estado_municipio2
-          else if (filtros()$nivel2 == "Municípios semelhantes")
-            grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
-        ) |>
         dplyr::group_by(ano) |>
         cria_indicadores(df_calcs = bloco4_calcs, filtros = filtros(), adicionar_localidade = FALSE, referencia = TRUE) |>
         dplyr::rename_with(~paste0("br_", .x), dplyr::starts_with("prop") | dplyr::starts_with("contrib")) |>
         dplyr::mutate(
-          localidade_comparacao = dplyr::if_else(
-            filtros()$comparar == "Não",
-            "Média nacional",
-            dplyr::case_when(
-              filtros()$nivel2 == "Nacional" ~ "Média nacional",
-              filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
-              filtros()$nivel2 == "Estadual" ~ filtros()$estado2,
-              filtros()$nivel2 == "Microrregião de saúde" ~ filtros()$micro2,
-              filtros()$nivel2 == "Macrorregião de saúde" ~ filtros()$macro2,
-              filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
-              filtros()$nivel2 == "Municípios semelhantes" ~ "Média dos municípios semelhantes",
-            )
-          )
+          localidade_comparacao = "Média nacional"
         )
     })
 
@@ -2089,7 +2061,19 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
 
 
     ##### Criando os outputs para o segundo indicador de Robson #####
-    data4_juncao_aux <- reactive({dplyr::full_join(data4(), data4_referencia(), by = "ano")})
+    data4_juncao_aux <- reactive({
+      if (filtros()$comparar == "Sim") {
+        dplyr::full_join(
+          data4(),
+          data4_comp() |>
+            dplyr::rename_with(~paste0("br_", .x), dplyr::starts_with("prop") | dplyr::starts_with("contrib")) |>
+            dplyr::rename(localidade_comparacao = localidade),
+          by = "ano"
+        )
+      } else {
+        dplyr::full_join(data4(), data4_referencia(), by = "ano")
+      }
+    })
 
     output$plot1_indicador2 <- highcharter::renderHighchart({
       highcharter::highchart() |>
