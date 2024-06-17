@@ -1055,7 +1055,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
             grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
         ) |>
         dplyr::group_by(ano) |>
-        cria_indicadores(df_calcs = bloco4_calcs, filtros = filtros(), adicionar_localidade = FALSE) |>
+        cria_indicadores(df_calcs = bloco4_calcs, filtros = filtros(), adicionar_localidade = FALSE, referencia = TRUE) |>
         dplyr::rename_with(~paste0("br_", .x), dplyr::starts_with("prop") | dplyr::starts_with("contrib")) |>
         dplyr::mutate(
           localidade_comparacao = dplyr::if_else(
