@@ -907,6 +907,17 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
       contrib_robson_faltante_tx_cesariana = rep("round((sum(mulheres_com_parto_cesariana) - sum(dplyr::across(dplyr::starts_with('total_cesariana')))) / sum(mulheres_com_parto_cesariana) * 100, 1)", 2)
     )
 
+    bloco4_deslocamento_calcs <- data.frame(
+      tipo = c("local", "referencia"),
+      prop_partos_municipio_res = rep("round(sum(local, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1)", 2),
+      prop_partos_fora_municipio_res = rep("round(sum(nao_local, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1)", 2),
+      prop_partos_rsaude_res = rep("round(sum(dentro_regiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1)", 2),
+      prop_partos_macro_rsaude_res = rep("round(sum(dentro_macrorregiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1)", 2),
+      prop_partos_fora_macro_rsaude_res = rep("round(sum(fora_macrorregiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1)", 2),
+      prop_partos_fora_uf_res = rep("round(sum(outra_uf, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1)", 2)
+    )
+
+
     data4_resumo <- reactive({
       bloco4 |>
         dplyr::filter(ano >= max(2014, filtros()$ano2[1]) & ano <= filtros()$ano2[2]) |>
@@ -1642,7 +1653,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
             grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
         ) |>
         dplyr::group_by(ano) |>
-        cria_indicadores(df_calcs = bloco4_calcs, filtros = filtros(), adicionar_localidade = FALSE) |>
+        cria_indicadores(df_calcs = bloco4_calcs, filtros = filtros(), comp = TRUE, adicionar_localidade = FALSE) |>
         dplyr::mutate(
           "localidade" = dplyr::case_when(
             filtros()$nivel2 == "Nacional" ~ "Brasil",
@@ -2257,127 +2268,69 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
 
     })
 
-    output$grafico_deslocamento_muni_prop1 <- output$grafico_deslocamento_resto_prop1 <- highcharter::renderHighchart({
-      tryCatch({
-        highcharter::highchart() |>
-          highcharter::hc_add_series(
-            name = "No município de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_municipio_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_municipio_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_add_series(
-            name = "Na microrregião de saúde, mas fora do município de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_rsaude_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_rsaude_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_add_series(
-            name = "Na macrorregião de saúde, mas fora da microrregião de saúde de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_macro_rsaude_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_macro_rsaude_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_add_series(
-            name = "Fora da macrorregião de saúde, mas na UF de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_fora_macro_rsaude_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_fora_macro_rsaude_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_add_series(
-            name = "Fora da UF de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_fora_uf_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_fora_uf_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
-          highcharter::hc_colors(viridis::magma(7, direction = -1)[-c(1, 7)]) |>
-          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
-          highcharter::hc_yAxis(title = list(text = "% de nascidos vivos"), min = 0, max = 100) #|>
-        #highcharter::hc_legend(width = 400, itemWidth = 200, align = "center", itemStyle = list(width = 250))
-      },
-      error = function(e) {}
-      )
+    output$grafico_deslocamento_muni_prop1 <- output$grafico_deslocamento_resto_prop1 <- output$grafico_deslocamento_uf_prop1 <- highcharter::renderHighchart({
+      # tryCatch({
+      highcharter::highchart() |>
+        highcharter::hc_add_series(
+          name = "No município de residência",
+          data = data4_deslocamento_juncao(),
+          type = "column",
+          highcharter::hcaes(x = ano, y = prop_partos_municipio_res),
+          tooltip = list(
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_municipio_res:,f}% </b>"
+          )
+        ) |>
+        highcharter::hc_add_series(
+          name = "Na microrregião de saúde, mas fora do município de residência",
+          data = data4_deslocamento_juncao(),
+          type = "column",
+          highcharter::hcaes(x = ano, y = prop_partos_rsaude_res),
+          tooltip = list(
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_rsaude_res:,f}% </b>"
+          )
+        ) |>
+        highcharter::hc_add_series(
+          name = "Na macrorregião de saúde, mas fora da microrregião de saúde de residência",
+          data = data4_deslocamento_juncao(),
+          type = "column",
+          highcharter::hcaes(x = ano, y = prop_partos_macro_rsaude_res),
+          tooltip = list(
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_macro_rsaude_res:,f}% </b>"
+          )
+        ) |>
+        highcharter::hc_add_series(
+          name = "Fora da macrorregião de saúde, mas na UF de residência",
+          data = data4_deslocamento_juncao(),
+          type = "column",
+          highcharter::hcaes(x = ano, y = prop_partos_fora_macro_rsaude_res),
+          tooltip = list(
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_fora_macro_rsaude_res:,f}% </b>"
+          )
+        ) |>
+        highcharter::hc_add_series(
+          name = "Fora da UF de residência",
+          data = data4_deslocamento_juncao(),
+          type = "column",
+          highcharter::hcaes(x = ano, y = prop_partos_fora_uf_res),
+          tooltip = list(
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_fora_uf_res:,f}% </b>"
+          )
+        ) |>
+        highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
+        highcharter::hc_colors(viridis::magma(7, direction = -1)[-c(1, 7)]) |>
+        highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
+        highcharter::hc_yAxis(title = list(text = "% de nascidos vivos"), min = 0, max = 100)
+      # },
+      # error = function(e) {}
+      # )
     })
 
-    output$grafico_deslocamento_uf_prop1 <- highcharter::renderHighchart({
-      tryCatch({
-        highcharter::highchart() |>
-          highcharter::hc_add_series(
-            name = "No município de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_municipio_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> Média nacional: <b> {point.br_prop_partos_municipio_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_add_series(
-            name = "Na microrregião de saúde, mas fora do município de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_rsaude_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> Média nacional: <b> {point.br_prop_partos_rsaude_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_add_series(
-            name = "Na macrorregião de saúde, mas fora da microrregião de saúde de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_macro_rsaude_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> Média nacional: <b> {point.br_prop_partos_macro_rsaude_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_add_series(
-            name = "Fora da macrorregião de saúde, mas na UF de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_fora_macro_rsaude_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> Média nacional: <b> {point.br_prop_partos_fora_macro_rsaude_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_add_series(
-            name = "Fora da UF de residência",
-            data = data4_deslocamento_juncao(),
-            type = "column",
-            highcharter::hcaes(x = ano, y = prop_partos_fora_uf_res),
-            tooltip = list(
-              pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> Média nacional: <b> {point.br_prop_partos_fora_uf_res:,f}% </b>"
-            )
-          ) |>
-          highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
-          highcharter::hc_colors(viridis::magma(7, direction = -1)[-c(1, 7)]) |>
-          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
-          highcharter::hc_yAxis(title = list(text = "Contribuição % para a taxa global de cesarianas"), min = 0, max = 100)
-      },
-      error = function(e) {}
-      )
-    })
-
-    output$grafico_deslocamento_muni_med1 <- highcharter::renderHighchart({
+    output$grafico_deslocamento_muni_med1 <- output$grafico_deslocamento_uf_med1 <- highcharter::renderHighchart({
       tryCatch({
         highcharter::highchart() |>
           highcharter::hc_add_series(
             name = "Total de partos",
-            data = data4_deslocamento_muni_med(),
+            data = data4_deslocamento_med(),
             type = "line",
             highcharter::hcaes(x = ano, y = no_local),
             legendIndex = 1,
@@ -2385,7 +2338,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           ) |>
           highcharter::hc_add_series(
             name = "Serviços de baixa complexidade",
-            data = data4_deslocamento_muni_med(),
+            data = data4_deslocamento_med(),
             type = "line",
             highcharter::hcaes(x = ano, y = baixa_complexidade),
             legendIndex = 2,
@@ -2393,7 +2346,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           ) |>
           highcharter::hc_add_series(
             name = "Serviços de alta complexidade",
-            data = data4_deslocamento_muni_med(),
+            data = data4_deslocamento_med(),
             type = "line",
             highcharter::hcaes(x = ano, y = alta_complexidade),
             legendIndex = 3,
@@ -2408,104 +2361,53 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
       error = function(e) {}
       )
     })
-
-    output$grafico_deslocamento_uf_med1 <- highcharter::renderHighchart({
-      tryCatch({
-        highcharter::highchart() |>
-          highcharter::hc_add_series(
-            name = "Total de partos",
-            data = data4_deslocamento_uf_med(),
-            type = "line",
-            highcharter::hcaes(x = ano, y = no_local),
-            legendIndex = 1,
-            index = 1
-          ) |>
-          highcharter::hc_add_series(
-            name = "Serviços de baixa complexidade",
-            data = data4_deslocamento_uf_med(),
-            type = "line",
-            highcharter::hcaes(x = ano, y = baixa_complexidade),
-            legendIndex = 2,
-            index = 2
-          ) |>
-          highcharter::hc_add_series(
-            name = "Serviços de alta complexidade",
-            data = data4_deslocamento_uf_med(),
-            type = "line",
-            highcharter::hcaes(x = ano, y = alta_complexidade),
-            legendIndex = 3,
-            index = 3
-          ) |>
-          highcharter::hc_tooltip(valueSuffix = " km", shared = TRUE, sort = TRUE, valueDecimals = 2) |>
-          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
-          highcharter::hc_yAxis(title = list(text = "km"), min = 0) |>
-          #highcharter::hc_add_theme(highcharter::hc_theme_elementary()) |>
-          highcharter::hc_colors(cols)
-      },
-      error = function(e) {}
-      )
-    })
-
-    output$grafico_deslocamento_muni_med2 <- highcharter::renderHighchart({
-      tryCatch({
-        highcharter::highchart() |>
-          highcharter::hc_add_series(
-            name = "Total de partos",
-            data = data4_deslocamento_muni_med2(),
-            type = "line",
-            highcharter::hcaes(x = ano, y = no_local),
-            legendIndex = 1,
-            index = 1
-          ) |>
-          highcharter::hc_add_series(
-            name = "Serviços de baixa complexidade",
-            data = data4_deslocamento_muni_med2(),
-            type = "line",
-            highcharter::hcaes(x = ano, y = baixa_complexidade),
-            legendIndex = 2,
-            index = 2
-          ) |>
-          highcharter::hc_add_series(
-            name = "Serviços de alta complexidade",
-            data = data4_deslocamento_muni_med2(),
-            type = "line",
-            highcharter::hcaes(x = ano, y = alta_complexidade),
-            legendIndex = 3,
-            index = 3
-          ) |>
-          highcharter::hc_tooltip(valueSuffix = " km", shared = TRUE, sort = TRUE, valueDecimals = 2) |>
-          highcharter::hc_xAxis(title = list(text = ""), categories = filtros()$ano2[1]:filtros()$ano2[2], allowDecimals = FALSE) |>
-          highcharter::hc_yAxis(title = list(text = "km"), min = 0) |>
-          #highcharter::hc_add_theme(highcharter::hc_theme_elementary()) |>
-          highcharter::hc_colors(cols)
-      },
-      error = function(e) {}
-      )
-    })
-
 
     output$infos_deslocamento_muni <- renderUI({
       if (filtros()$nivel == "Municipal") {
+        data_infos_deslocamento <- bloco4_deslocamento_muni |>
+          dplyr::filter(
+            ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
+            municipio == filtros()$municipio & uf == filtros()$estado_municipio
+          ) |>
+          dplyr::group_by(ano) |>
+          dplyr::mutate(
+            prop_partos_muni_maior_ocorrencia = round(n_nasc1/nao_local * 100, 1),
+            prop_partos_muni_2_maior_ocorrencia = round(n_nasc2/nao_local * 100, 1),
+            prop_partos_muni_3_maior_ocorrencia = round(n_nasc3/nao_local * 100, 1),
+            .keep = "unused"
+          ) |>
+          dplyr::ungroup()
+
         municipio1 <- municipio2 <- municipio3 <- NULL
 
-        for (i in 1:length(filtros()$ano2[1]:min(filtros()$ano2[2], 2020))) {
-          municipio1[i] <- tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc1[i])]
-          #uf_municipio_1[i] <- tabela_aux_municipios$uf[which(tabela_aux_municipios$codmunres == data4_deslocamento$codmunnasc1[i])]
-          municipio2[i] <- tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc2[i])]
-          #uf_municipio_2[i] <- tabela_aux_municipios$uf[which(tabela_aux_municipios$codmunres == data4_deslocamento$codmunnasc2[i])]
-          municipio3[i] <- tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data4_deslocamento()$codmunnasc3[i])]
-          #uf_municipio_3[i] <- tabela_aux_municipios$uf[which(tabela_aux_municipios$codmunres == data4_deslocamento$codmunnasc3[i])]
+        for (i in 1:length(filtros()$ano2[1]:min(filtros()$ano2[2], 2020))) { #Trocar esse 2020 por 2022 (ou 2023) quando os dados estiverem atualizados
+          municipio1[i] <- ifelse(
+            !is.na(data_infos_deslocamento$codmunnasc1[i]),
+            tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data_infos_deslocamento$codmunnasc1[i])],
+            NA
+          )
 
+          municipio2[i] <- ifelse(
+            !is.na(data_infos_deslocamento$codmunnasc2[i]),
+            tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data_infos_deslocamento$codmunnasc2[i])],
+            NA
+          )
+
+          municipio3[i] <- ifelse(
+            !is.na(data_infos_deslocamento$codmunnasc3[i]),
+            tabela_aux_municipios$municipio[which(tabela_aux_municipios$codmunres == data_infos_deslocamento$codmunnasc3[i])],
+            NA
+          )
         }
 
-        partos_municipio1 <- data4_deslocamento()$prop_partos_muni_maior_ocorrencia
-        partos_municipio2 <- data4_deslocamento()$prop_partos_muni_2_maior_ocorrencia
-        partos_municipio3 <- data4_deslocamento()$prop_partos_muni_3_maior_ocorrencia
-        cnes <- data4_deslocamento()$cnes
-        estabelecimento <- data4_deslocamento()$nome_estabelecimento_fantasia
-        partos_estabelecimento <- data4_deslocamento()$nasc_estab
+        partos_municipio1 <- data_infos_deslocamento$prop_partos_muni_maior_ocorrencia
+        partos_municipio2 <- data_infos_deslocamento$prop_partos_muni_2_maior_ocorrencia
+        partos_municipio3 <- data_infos_deslocamento$prop_partos_muni_3_maior_ocorrencia
+        cnes <- data_infos_deslocamento$cnes
+        estabelecimento <- data_infos_deslocamento$nome_estabelecimento_fantasia
+        partos_estabelecimento <- data_infos_deslocamento$nasc_estab
 
-        ano <- filtros()$ano2[1]:min(filtros()$ano2[2], 2020)
+        ano <- filtros()$ano2[1]:min(filtros()$ano2[2], 2020) #Trocar esse 2020 por 2022 (ou 2023) quando os dados estiverem atualizados
         infos_municipio1 <- dplyr::if_else(
           glue::glue("{municipio1} ({formatC(partos_municipio1, big.mark = '.', decimal.mark = ',')}%)") == "NA (NA%)",
           glue::glue("---"),
@@ -3130,78 +3032,68 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
 
 
     data4_deslocamento <- reactive({
-      if (filtros()$nivel == "Municipal") {
-        bloco4_deslocamento_muni |>
-          dplyr::filter(
-            ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-            municipio == filtros()$municipio & uf == filtros()$estado_municipio
-          ) |>
-          dplyr::group_by(ano) |>
-          dplyr::mutate(
-            prop_partos_municipio_res = round(local/destino_total * 100, 1),
-            prop_partos_fora_municipio_res = round(nao_local/destino_total * 100, 1),
-            prop_partos_rsaude_res = round(dentro_regiao_saude/destino_total * 100, 1),
-            prop_partos_macro_rsaude_res = round(dentro_macrorregiao_saude/destino_total * 100, 1),
-            prop_partos_fora_macro_rsaude_res = round(fora_macrorregiao_saude/destino_total * 100, 1),
-            prop_partos_fora_uf_res = round(outra_uf/destino_total * 100, 1),
-            prop_partos_muni_maior_ocorrencia = round(n_nasc1/nao_local * 100, 1),
-            prop_partos_muni_2_maior_ocorrencia = round(n_nasc2/nao_local * 100, 1),
-            prop_partos_muni_3_maior_ocorrencia = round(n_nasc3/nao_local * 100, 1),
-            localidade = filtros()$municipio,
-            .keep = "unused"
-          ) |>
-          dplyr::ungroup()
-      } else if (filtros()$nivel == "Estadual") {
-        bloco4_deslocamento_uf |>
-          dplyr::filter(
-            ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2],
-            uf == filtros()$estado
-          ) |>
-          dplyr::group_by(ano) |>
-          dplyr::mutate(
-            prop_partos_municipio_res = round(local/destino_total * 100, 1),
-            prop_partos_fora_municipio_res = round(nao_local/destino_total * 100, 1),
-            prop_partos_rsaude_res = round(dentro_regiao_saude/destino_total * 100, 1),
-            prop_partos_macro_rsaude_res = round(dentro_macrorregiao_saude/destino_total * 100, 1),
-            prop_partos_fora_macro_rsaude_res = round(fora_macrorregiao_saude/destino_total * 100, 1),
-            prop_partos_fora_uf_res = round(outra_uf/destino_total * 100, 1),
-            localidade = filtros()$estado,
-            .keep = "unused"
-          ) |>
-          dplyr::ungroup()
+      if (filtros()$nivel == "Estadual") {
+        data_aux <- bloco4_deslocamento_uf
       } else {
-        bloco4_deslocamento_muni |>
-          dplyr::filter(
+        data_aux <- bloco4_deslocamento_muni
+      }
+      data_aux |>
+        dplyr::filter(
+          ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+        ) |>
+        dplyr::filter(
+          if (filtros()$nivel == "Nacional")
             ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-          ) |>
-          dplyr::filter(
-            if (filtros()$nivel == "Nacional")
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
-            else if (filtros()$nivel == "Regional")
-              regiao == filtros()$regiao
-            else if (filtros()$nivel == "Macrorregião de saúde")
-              macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
-            else if(filtros()$nivel == "Microrregião de saúde")
-              r_saude == filtros()$micro & uf == filtros()$estado_micro
-          ) |>
-          dplyr::group_by(ano) |>
-          dplyr::summarise(
-            prop_partos_municipio_res = round(sum(local, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-            prop_partos_fora_municipio_res = round(sum(nao_local, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-            prop_partos_rsaude_res = round(sum(dentro_regiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-            prop_partos_macro_rsaude_res = round(sum(dentro_macrorregiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-            prop_partos_fora_macro_rsaude_res = round(sum(fora_macrorregiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-            prop_partos_fora_uf_res = round(sum(outra_uf, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-            localidade = dplyr::case_when(
-              filtros()$nivel == "Nacional" ~ "Brasil",
-              filtros()$nivel == "Regional" ~ filtros()$regiao,
-              filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
-              filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro
-            )
-          ) |>
-          dplyr::ungroup()
+          else if (filtros()$nivel == "Regional")
+            regiao == filtros()$regiao
+          else if (filtros()$nivel == "Estadual")
+            uf == filtros()$estado
+          else if (filtros()$nivel == "Macrorregião de saúde")
+            macro_r_saude == filtros()$macro & uf == filtros()$estado_macro
+          else if(filtros()$nivel == "Microrregião de saúde")
+            r_saude == filtros()$micro & uf == filtros()$estado_micro
+          else if(filtros()$nivel == "Municipal")
+            municipio == filtros()$municipio & uf == filtros()$estado_municipio
+        ) |>
+        dplyr::group_by(ano) |>
+        cria_indicadores(df_calcs = bloco4_deslocamento_calcs, filtros = filtros(), adicionar_localidade = FALSE) |>
+        dplyr::mutate(
+          localidade = dplyr::case_when(
+            filtros()$nivel == "Nacional" ~ "Brasil",
+            filtros()$nivel == "Regional" ~ filtros()$regiao,
+            filtros()$nivel == "Estadual" ~ filtros()$estado,
+            filtros()$nivel == "Macrorregião de saúde" ~ filtros()$macro,
+            filtros()$nivel == "Microrregião de saúde" ~ filtros()$micro,
+            filtros()$nivel == "Municipal" ~ filtros()$municipio
+          )
+        )
+    })
+
+    data4_deslocamento_med <- reactive({
+      if (filtros()$nivel == "Municipal") {
+        input_local_med <- input$local_med_muni
+        data_aux <- bloco4_deslocamento_muni
+      } else {
+        input_local_med <- input$local_med_uf
+        data_aux <- bloco4_deslocamento_uf
       }
 
+      data4_deslocamento_med_aux <- data_aux |>
+        dplyr::filter(
+          ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
+        ) |>
+        dplyr::filter(
+          if (filtros()$nivel == "Estadual")
+            uf == filtros()$estado
+          else if(filtros()$nivel == "Municipal")
+            municipio == filtros()$municipio & uf == filtros()$estado_municipio
+        ) |>
+        dplyr::select(
+          ano,
+          no_local = glue::glue("km_partos_{input_local_med}"),
+          baixa_complexidade = "km_partos_fora_municipio_baixa_complexidade",
+          alta_complexidade = "km_partos_fora_municipio_alta_complexidade"
+        )
     })
 
     data4_deslocamento_comp <- reactive({
@@ -3226,13 +3118,9 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
             grupo_kmeans == tabela_aux_municipios$grupo_kmeans[which(tabela_aux_municipios$municipio == filtros()$municipio & tabela_aux_municipios$uf == filtros()$estado_municipio)]
         ) |>
         dplyr::group_by(ano) |>
-        dplyr::summarise(
-          br_prop_partos_municipio_res = round(sum(local, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-          br_prop_partos_fora_municipio_res = round(sum(nao_local, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-          br_prop_partos_rsaude_res = round(sum(dentro_regiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-          br_prop_partos_macro_rsaude_res = round(sum(dentro_macrorregiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-          br_prop_partos_fora_macro_rsaude_res = round(sum(fora_macrorregiao_saude, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
-          br_prop_partos_fora_uf_res = round(sum(outra_uf, na.rm = TRUE)/sum(destino_total, na.rm = TRUE) * 100, 1),
+        cria_indicadores(df_calcs = bloco4_deslocamento_calcs, filtros = filtros(), comp = TRUE, adicionar_localidade = FALSE) |>
+        dplyr::rename_with(~paste0("br_", .x), dplyr::starts_with("prop")) |>
+        dplyr::mutate(
           localidade_comparacao = dplyr::case_when(
             filtros()$nivel2 == "Nacional" ~ "Média nacional",
             filtros()$nivel2 == "Regional" ~ filtros()$regiao2,
@@ -3242,8 +3130,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
             filtros()$nivel2 == "Municipal" ~ filtros()$municipio2,
             filtros()$nivel2 == "Municípios semelhantes" ~ "Média dos municípios semelhantes",
           )
-        ) |>
-        dplyr::ungroup()
+        )
     })
 
 
@@ -3487,144 +3374,6 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
         shinyjs::show(id = "mostrar_card_indicadores_deslocamento_outros_niveis", anim = TRUE, animType = "slide", time = 0.8)
       }
     })
-
-
-    data4_deslocamento_muni_med <- reactive({
-      if (input$local_med_muni == "fora_municipio") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_municipio",
-            baixa_complexidade = "km_partos_fora_municipio_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_municipio_alta_complexidade"
-          )
-      } else if (input$local_med_muni == "na_regiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_na_regiao",
-            baixa_complexidade = "km_partos_na_regiao_baixa_complexidade",
-            alta_complexidade = "km_partos_na_regiao_alta_complexidade"
-          )
-      } else if (input$local_med_muni == "na_macrorregiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_na_macrorregiao",
-            baixa_complexidade = "km_partos_na_macrorregiao_baixa_complexidade",
-            alta_complexidade = "km_partos_na_macrorregiao_alta_complexidade"
-          )
-      } else if (input$local_med_muni == "fora_macrorregiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_macrorregiao",
-            baixa_complexidade = "km_partos_fora_macrorregiao_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_macrorregiao_alta_complexidade"
-          )
-      } else if (input$local_med_muni == "fora_uf") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_uf",
-            baixa_complexidade = "km_partos_fora_uf_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_uf_alta_complexidade"
-          )
-      }
-
-    })
-
-    data4_deslocamento_uf_med <- reactive({
-      if (input$local_med_uf == "fora_municipio") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_municipio",
-            baixa_complexidade = "km_partos_fora_municipio_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_municipio_alta_complexidade"
-          )
-      } else if (input$local_med_uf == "na_regiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_na_regiao",
-            baixa_complexidade = "km_partos_na_regiao_baixa_complexidade",
-            alta_complexidade = "km_partos_na_regiao_alta_complexidade"
-          )
-      } else if (input$local_med_uf == "na_macrorregiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_na_macrorregiao",
-            baixa_complexidade = "km_partos_na_macrorregiao_baixa_complexidade",
-            alta_complexidade = "km_partos_na_macrorregiao_alta_complexidade"
-          )
-      } else if (input$local_med_uf == "fora_macrorregiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_macrorregiao",
-            baixa_complexidade = "km_partos_fora_macrorregiao_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_macrorregiao_alta_complexidade"
-          )
-      } else if (input$local_med_uf == "fora_uf") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_uf",
-            baixa_complexidade = "km_partos_fora_uf_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_uf_alta_complexidade"
-          )
-      }
-
-    })
-
-    data4_deslocamento_muni_med2 <- reactive({
-      if (input$local_med2 == "fora_municipio") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_municipio",
-            baixa_complexidade = "km_partos_fora_municipio_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_municipio_alta_complexidade"
-          )
-      } else if (input$local_med2 == "na_regiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_na_regiao",
-            baixa_complexidade = "km_partos_na_regiao_baixa_complexidade",
-            alta_complexidade = "km_partos_na_regiao_alta_complexidade"
-          )
-      } else if (input$local_med2 == "na_macrorregiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_na_macrorregiao",
-            baixa_complexidade = "km_partos_na_macrorregiao_baixa_complexidade",
-            alta_complexidade = "km_partos_na_macrorregiao_alta_complexidade"
-          )
-      } else if (input$local_med2 == "fora_macrorregiao") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_macrorregiao",
-            baixa_complexidade = "km_partos_fora_macrorregiao_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_macrorregiao_alta_complexidade"
-          )
-      } else if (input$local_med2 == "fora_uf") {
-        data4_deslocamento() |>
-          dplyr::select(
-            ano,
-            no_local = "km_partos_fora_uf",
-            baixa_complexidade = "km_partos_fora_uf_baixa_complexidade",
-            alta_complexidade = "km_partos_fora_uf_alta_complexidade"
-          )
-      }
-
-    })
-
-
 
 
   })

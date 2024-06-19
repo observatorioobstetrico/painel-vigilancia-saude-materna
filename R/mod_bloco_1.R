@@ -305,6 +305,7 @@ mod_bloco_1_server <- function(id, filtros, titulo_localidade_aux){
       porc_nvm_indigenas = rep("round(sum(nvm_indigenas)/sum(total_de_nascidos_vivos) * 100, 1)", 2)
     )
 
+
     data1 <- reactive({
       bloco1 |>
         dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
@@ -446,7 +447,7 @@ mod_bloco_1_server <- function(id, filtros, titulo_localidade_aux){
     data_brasil_resumo <- reactive({
       bloco1 |>
         dplyr::filter(ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]) |>
-        cria_indicadores(df_calcs = bloco1_calcs, filtros = filtros())
+        cria_indicadores(df_calcs = bloco1_calcs, filtros = filtros(), referencia = TRUE)
     })
 
     output$caixa_b1_i1 <- renderUI({
