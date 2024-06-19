@@ -52,7 +52,8 @@ cria_indicadores <- function(df_localidade, df_calcs, filtros, referencia = FALS
           filtros[[paste0("nivel", sufixo)]] == "Estadual" ~ filtros[[paste0("estado", sufixo)]],
           filtros[[paste0("nivel", sufixo)]] == "Macrorregião de saúde" ~ filtros[[paste0("macro", sufixo)]],
           filtros[[paste0("nivel", sufixo)]] == "Microrregião de saúde" ~ filtros[[paste0("micro", sufixo)]],
-          filtros[[paste0("nivel", sufixo)]] == "Municipal" ~ filtros[[paste0("municipio", sufixo)]]
+          filtros[[paste0("nivel", sufixo)]] == "Municipal" ~ filtros[[paste0("municipio", sufixo)]],
+          filtros[[paste0("nivel", sufixo)]] == "Municípios semelhantes" ~ "Média dos municípios semelhantes"
         )
       ) |>
       dplyr::ungroup()
