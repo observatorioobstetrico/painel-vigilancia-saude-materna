@@ -858,7 +858,7 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
           pagedown::chrome_print(
             input = arquivo_html,
             output = file,
-            extra_args = c("--no-sandbox")
+            extra_args = c("--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage")
           )
 
           incProgress(0.3)
