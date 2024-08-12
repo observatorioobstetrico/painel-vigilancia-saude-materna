@@ -899,13 +899,13 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
         if(filtros()$nivel2 == "Estadual"){
           rmm_corrigida |>
             dplyr::filter(
-              localidade == filtros()$estado,
+              localidade == filtros()$estado2,
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
             )
         } else if(filtros()$nivel2 == "Regional"){
           rmm_corrigida |>
             dplyr::filter(
-              localidade == filtros()$regiao,
+              localidade == filtros()$regiao2,
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
             )
         } else if(filtros()$nivel2=="Nacional"){
