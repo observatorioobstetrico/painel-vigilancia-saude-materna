@@ -94,7 +94,7 @@ bloco4_deslocamento_uf_aux$km_partos_fora_macrorregiao <- as.numeric(bloco4_desl
 bloco4_deslocamento_uf_aux$km_partos_fora_macrorregiao_alta_complexidade <- as.numeric(bloco4_deslocamento_uf_aux$km_partos_fora_macrorregiao_alta_complexidade)
 bloco4_deslocamento_uf_aux$km_partos_fora_macrorregiao_baixa_complexidade <- as.numeric(bloco4_deslocamento_uf_aux$km_partos_fora_macrorregiao_baixa_complexidade)
 
-bloco5_aux <- read.csv("data-raw/csv/indicadores_bloco5_condicao_de_nascimento_2012_2022.csv") |>
+bloco5_aux <- read.csv("data-raw/csv/indicadores_bloco5_condicao_de_nascimento_2012_2023.csv") |>
   janitor::clean_names()
 
 # asfixia_aux <- read.csv("data-raw/csv/asfixia_2012_2022.csv", sep = ';') |>
