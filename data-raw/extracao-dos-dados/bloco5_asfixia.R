@@ -27,6 +27,8 @@ sinasc21 <- microdatasus::fetch_datasus(year_start = 2021, year_end = 2021, info
 
 sinasc22 <- microdatasus::fetch_datasus(year_start = 2022, year_end = 2022, information_system = 'SINASC', vars = c("CODMUNRES", "PESO", "APGAR5", "IDANOMAL", "CODANOMAL"))
 
+sinasc23 <- microdatasus::fetch_datasus(year_start = 2023, year_end = 2023, information_system = 'SINASC', vars = c("CODMUNRES", "PESO", "APGAR5", "IDANOMAL", "CODANOMAL"))
+
 ## criando coluna de anos
 sinasc12$Ano <- 2012
 sinasc13$Ano <- 2013
@@ -40,33 +42,36 @@ sinasc19$Ano <- 2019
 sinasc20$Ano <- 2020
 sinasc21$Ano <- 2021
 sinasc21$Ano <- 2022
+sinasc21$Ano <- 2023
 
-sinasc_microdatasus <- dplyr::bind_rows(sinasc12, sinasc13, sinasc14, sinasc15, sinasc16, sinasc17, sinasc18, sinasc19, sinasc20, sinasc21, sinasc22)
+sinasc_microdatasus <- dplyr::bind_rows(sinasc12, sinasc13, sinasc14, sinasc15,
+                                        sinasc16, sinasc17, sinasc18, sinasc19,
+                                        sinasc20, sinasc21, sinasc22, sinasc23)
 
-write.table(sinasc_microdatasus, 'bruto_sinasc_microdatasus_2012_2022.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(sinasc_microdatasus, 'bruto_sinasc_microdatasus_2012_2023.csv', sep = ";", dec = ".", row.names = FALSE)
 
 #### agrupando
 
-sinasc_microdatasus <- read.csv('bruto_sinasc_microdatasus_2012_2022.csv', sep = ";")
+sinasc_microdatasus <- read.csv('bruto_sinasc_microdatasus_2012_2023.csv', sep = ";")
 
 sinasc_microdatasus <- sinasc_microdatasus |>
   group_by(CODMUNRES, Ano, PESO, APGAR5, IDANOMAL, CODANOMAL) |>
   summarise(Nascimentos = n())
 
 #### salvar base agrupada
-write.table(sinasc_microdatasus, 'sinasc_microdatasus_2012_2022.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(sinasc_microdatasus, 'sinasc_microdatasus_2012_2023.csv', sep = ";", dec = ".", row.names = FALSE)
 
 
 ###################
 # TRATAMENTO DOS DADOS PARA CRIAÇÃO DAS TABELAS
 ##################
 
-dados <- read.csv('sinasc_microdatasus_2012_2022.csv', sep = ";")
-tabela_aux_municipios <- read_csv("tabela_municipios.csv")
+dados <- read.csv('sinasc_microdatasus_2022_2023.csv', sep = ";")
+tabela_aux_municipios <- read.csv("data-raw/csv/tabela_aux_municipios.csv", sep = ",")
 
 #### adicionando uf e municipio os dados
 
-tabela_aux_municipios <- tabela_aux_municipios[,c(2:4)]
+tabela_aux_municipios <- tabela_aux_municipios |> select(codmunres, uf, municipio)
 tabela_aux_municipios <- tabela_aux_municipios |>
   rename(CODMUNRES = codmunres)
 
@@ -115,7 +120,7 @@ asfixia1_final <- left_join(asfixia14, asfixia14_1,
 asfixia1_final <- asfixia1_final %>%
   mutate(nascidos_vivos_asfixia1  = ifelse(is.na(nascidos_vivos_asfixia1), 0, nascidos_vivos_asfixia1))
 
-write.csv(asfixia1_final, "asfixia1_2012_2022.csv")
+write.csv(asfixia1_final, "asfixia1_2012_2023.csv")
 
 ###################### malformação
 
@@ -317,20 +322,20 @@ obter_descricao <- function(valor) {
 # Aplique a função para criar a variável "descricao"
 filtro_malformacao$descricao <- sapply(filtro_malformacao$valor, obter_descricao)
 
-write.table(filtro_malformacao, 'malformacao1_2012_2021.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(filtro_malformacao, 'malformacao1_2012_2023.csv', sep = ";", dec = ".", row.names = FALSE)
 
 # Aplique a função para criar a variável "descricao"
 filtro_malformacao$descricao <- sapply(filtro_malformacao$valor, obter_descricao)
 
 
-write.table(filtro_malformacao, 'malformacao_2012_2021.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(filtro_malformacao, 'malformacao_2012_2023.csv', sep = ";", dec = ".", row.names = FALSE)
 
 
 
 ###################
 
 
-asfixia_1 <- read.csv('asfixia1_2012_2022.csv', sep = ",")
+asfixia_1 <- read.csv('asfixia1_2012_2023.csv', sep = ",")
 
 asfixia_1 <- asfixia_1[,c(4:7)]
 
@@ -342,12 +347,12 @@ df_bloco8 <- asfixia_1 |>
   rename(codmunres = CODMUNRES,
          ano = Ano)
 
-write.table(df_bloco8, 'asfixia_2012_2022.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(df_bloco8, 'asfixia_2012_2023.csv', sep = ";", dec = ".", row.names = FALSE)
 
 
 ####
 
-malformacao <- read.csv('malformacao_2012_2022.csv', sep = ";")
+malformacao <- read.csv('malformacao_2012_2023.csv', sep = ";")
 #malformacao <- malformacao[,c(3:12)]
 
 malformacao <- malformacao |>
@@ -365,7 +370,7 @@ malformacao <- malformacao |>
          descricao,
          nascidos_vivos_anomalia)
 
-write.table(malformacao, 'malformacao_2012_2022.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(malformacao, 'malformacao_2012_2023.csv', sep = ";", dec = ".", row.names = FALSE)
 
 
 

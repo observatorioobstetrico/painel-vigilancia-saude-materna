@@ -5,7 +5,7 @@ codigos_municipios <- read.csv("Databases/tabela_aux_municipios.csv") |>
   pull(codmunres)
 
 #Criando um data.frame auxiliar que possui uma linha para cada combinação de município e ano
-df_aux_municipios <- data.frame(codmunres = rep(codigos_municipios, each = length(2012:2022)), ano = 2012:2022)
+df_aux_municipios <- data.frame(codmunres = rep(codigos_municipios, each = length(2012:2023)), ano = 2012:2023)
 
 #Criando o data.frame que irá receber todos os dados do bloco 4
 df_bloco4 <- data.frame()
@@ -15,7 +15,7 @@ df_bloco4 <- data.frame()
 df_list <- list()
 
 # Baixar os dados ano a ano
-for (ano in 2012:2022) {
+for (ano in 2012:2023) {
   df_ano <- microdatasus::fetch_datasus(year_start = ano, year_end = ano,
                                         information_system = "SINASC",
                                         vars = c("CODMUNRES"))
@@ -52,7 +52,7 @@ df_bloco4$total_de_nascidos_vivos[is.na(df_bloco4$total_de_nascidos_vivos)] <- 0
 df <- dataframe <- data.frame()
 
 # Baixar os dados ano a ano
-for (ano in 2012:2022) {
+for (ano in 2012:2023) {
   df_ano <- microdatasus::fetch_datasus(year_start = ano, year_end = ano,
                                         information_system = "SINASC",
                                         vars = c("CODMUNRES", "PARTO"))
@@ -89,7 +89,7 @@ df_bloco4$mulheres_com_parto_cesariana[is.na(df_bloco4$mulheres_com_parto_cesari
 ### df_robson
 
 # Baixar os dados ano a ano
-for (ano in 2012:2022) {
+for (ano in 2012:2023) {
   df_ano <- microdatasus::fetch_datasus(year_start = ano, year_end = ano,
                                         information_system = "SINASC",
                                         vars = c("CODMUNRES", "TPROBSON"))
@@ -274,7 +274,7 @@ df_bloco4$mulheres_dentro_do_grupo_de_robson_10[is.na(df_bloco4$mulheres_dentro_
 # Contribuição relativa de cada grupo de Robson na taxa global de cesariana
 
 # Baixar os dados ano a ano
-for (ano in 2012:2022) {
+for (ano in 2012:2023) {
   df_ano <- microdatasus::fetch_datasus(year_start = ano, year_end = ano,
                                         information_system = "SINASC",
                                         vars = c("CODMUNRES", "TPROBSON", "PARTO"))
@@ -454,7 +454,7 @@ df_bloco4 <- left_join(df_bloco4, df)
 df_bloco4$total_cesariana_grupo_robson_10[is.na(df_bloco4$total_cesariana_grupo_robson_10)] <- 0
 
 # Salvando a base de dados completa na pasta data-raw/csv -----------------
-write.csv(df_bloco4, "data-raw/csv/indicadores_bloco4_assistencia_ao_parto_2012-2022.csv", row.names = FALSE)
+write.csv(df_bloco4, "data-raw/csv/indicadores_bloco4_assistencia_ao_parto_2012-2023.csv", row.names = FALSE)
 
 
 

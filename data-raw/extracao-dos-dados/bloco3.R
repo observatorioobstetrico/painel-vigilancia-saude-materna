@@ -9,11 +9,11 @@ library(tidyr)
 
   df <- fetch_datasus(
     year_start = 2012,
-    year_end = 2022,
+    year_end = 2023,
     vars = c("CODMUNRES", "DTNASC", "CONSPRENAT", "MESPRENAT", "SEMAGESTAC"),
     information_system = "SINASC"
   )
-  
+
   #write.csv(df, paste0("dados_sinasc_bloco3.csv"))
 
 
@@ -25,7 +25,7 @@ library(tidyr)
      MESPRENAT,
      SEMAGESTAC
    )
- 
+
   df2 <- df |>
   mutate(
     ano = as.numeric(substr(DTNASC, 5, 8)),
@@ -33,9 +33,9 @@ library(tidyr)
     CONSPRENAT = as.numeric(CONSPRENAT),
     MESPRENAT = as.numeric(MESPRENAT),
     SEMAGESTAC = as.numeric(SEMAGESTAC)
-  ) |>  
+  ) |>
   mutate(
-    
+
     nascidos= 1,
     pelo_menos_uma_consulta_prenatal = case_when(
       CONSPRENAT >= 1 ~ 1,
@@ -58,7 +58,7 @@ library(tidyr)
         (SEMAGESTAC >= 36 & SEMAGESTAC < 38 & CONSPRENAT >= 6) |
         (SEMAGESTAC >= 38 & SEMAGESTAC < 40 & CONSPRENAT >= 7) |
         (SEMAGESTAC >= 40 & CONSPRENAT >= 8)) ~ 1,
-       
+
       !((SEMAGESTAC < 20 & CONSPRENAT >= 1) |
           (SEMAGESTAC >= 20 & SEMAGESTAC < 26 & CONSPRENAT >= 2) |
           (SEMAGESTAC >= 26 & SEMAGESTAC < 30 & CONSPRENAT >= 3) |
@@ -68,7 +68,7 @@ library(tidyr)
           (SEMAGESTAC >= 38 & SEMAGESTAC < 40 & CONSPRENAT >= 7) |
           (SEMAGESTAC >= 40 & CONSPRENAT >= 8)) ~ 0
     )
-    
+
   ) |>
   #select(codmunres, ano, nascidos) |>
   group_by(codmunres, ano) |>
@@ -86,7 +86,7 @@ codigos_municipios <- read_csv("data-raw/extracao-dos-dados/databases-antigas/ta
   pull(municipio)
 
 #Criando um data.frame auxiliar que possui uma linha para cada combinação de município e ano
-df_aux_municipios <- data.frame(codmunres = rep(codigos_municipios, each = length(2012:2022)), ano = 2020:2022)
+df_aux_municipios <- data.frame(codmunres = rep(codigos_municipios, each = length(2012:2023)), ano = 2020:2023)
 
 ##Transformando as colunas que estão em caracter para numéricas
 df2 <- df2 |> mutate_if(is.character, as.numeric)
@@ -98,15 +98,20 @@ df_bloco3[is.na(df_bloco3)] <- 0
 
 
 # Incidência de sífilis congênita por mil nascidos vivos ------------------
-##Lendo a base de dados obtida pelo site http://indicadoressifilis.aids.gov.br/
-df_sifilis_excel <- read_excel("Bloco_3/Databases/dados_painel_sifilis_2023.xlsx",
-                               sheet = "DADOS CONTINUAÇÃO 2"
+# Lendo a base de dados obtida pelo site http://indicadoressifilis.aids.gov.br/
+df_sifilis_excel1 <- read_excel("data-raw/extracao-dos-dados/databases-antigas/dados_painel_sifilis_2022.xlsx",
+                                sheet = "DADOS CONTINUAÇÃO 2"
 )
 
-#Corrigindo os nomes das colunas e filtrando pelos municípios que utilizamos no painel
-names(df_sifilis_excel) <- as.character(df_sifilis_excel[1,])
+df_sifilis_excel2 <- read_excel("data-raw/extracao-dos-dados/databases-antigas/dados_painel_sifilis_2013_2024.xlsx",
+                                sheet = "DADOS CONTINUAÇÃO 2"
+)
 
-df_sifilis <- df_sifilis_excel[-1, ] |>
+# Corrigindo os nomes das colunas e filtrando pelos municípios que utilizamos no painel
+names(df_sifilis_excel1) <- as.character(df_sifilis_excel1[1,])
+names(df_sifilis_excel2) <- as.character(df_sifilis_excel2[1,])
+
+df_sifilis1 <- df_sifilis_excel1[-1, ] |>
   clean_names() |>
   select(
     codmunres = codigo,
@@ -118,22 +123,47 @@ df_sifilis <- df_sifilis_excel[-1, ] |>
   filter(codmunres %in% df_aux_municipios$codmunres) |>
   mutate_if(is.character, as.numeric)
 
-#Passando para o formato long
-df_sifilis_long <- df_sifilis |>
+df_sifilis2 <- df_sifilis_excel2[-1, ] |>
+  clean_names() |>
+  select(
+    codmunres = codigo,
+    starts_with("sifilis_congenita_em_menores_de_um_ano_2")
+  ) |>
+  rename_with(
+    str_sub, start = -4, starts_with("sifilis_congenita_em_menores_de_um_ano_2")
+  ) |>
+  filter(codmunres %in% df_aux_municipios$codmunres) |>
+  mutate_if(is.character, as.numeric)
+
+# Passando para o formato long
+df_sifilis_long1 <- df_sifilis1 |>
   pivot_longer(
     cols = !codmunres,
     names_to = "ano",
     values_to = "casos_sc"
   ) |>
-  filter(ano <= 2022) |>
+  filter(ano <= 2020) |>
   mutate_if(is.character, as.numeric)
 
-##Juntando com o restante da base do bloco 3
-df_bloco3 <- left_join(df_bloco3, df_sifilis_long)
+df_sifilis_long2 <- df_sifilis2 |>
+  pivot_longer(
+    cols = !codmunres,
+    names_to = "ano",
+    values_to = "casos_sc"
+  ) |>
+  filter(ano <= 2023 & ano > 2020) |>
+  mutate_if(is.character, as.numeric)
 
-##Substituindo os NA's da coluna 'casos_sc' por 0 (gerados após o left_join)
+df_sifilis_long <- rbind(df_sifilis_long1, df_sifilis_long2)
+
+df_sifilis_long_2023 <- df_sifilis_long %>% filter(ano == 2023)
+
+# Juntando com o restante da base do bloco 3
+df_bloco3 <- left_join(df_bloco3, df_sifilis_long_2023)
+
+# Substituindo os NA's da coluna 'casos_sc' por 0 (gerados após o left_join)
 df_bloco3$casos_sc[is.na(df_bloco3$casos_sc)] <- 0
 
 # Salvando a base de dados completa -----------------
-write.csv(df_bloco3, " data-raw/csv/indicadores_bloco3_assistencia_pre-natal_2012-2022.csv", row.names = FALSE)
+write.csv(df_bloco3, " data-raw/csv/indicadores_bloco3_assistencia_pre-natal_2012-2023.csv", row.names = FALSE)
 
