@@ -527,15 +527,15 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
       prop_obitos_hipertens = rep("round(sum(obitos_mat_hipertensao) / sum(obitos_mat_diretos) * 100, 1)", 2),
       prop_obitos_hemo = rep("round(sum(obitos_mat_hemorragia) / sum(obitos_mat_diretos) * 100, 1)", 2),
       prop_obitos_infec = rep("round(sum(obitos_mat_infec_puerperal) / sum(obitos_mat_diretos) * 100, 1)", 2),
-      sum_casos_mmg = rep("sum(casos_mmg[ano <= 2020])", 2),
-      prop_mmg_int_publicas = rep("round(sum(casos_mmg[ano <= 2020]) / sum(total_internacoes[ano <= 2020]) * 100, 1)", 2),
-      prop_mmg_hipertensao = rep("round(sum(casos_mmg_hipertensao[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
-      prop_mmg_hemorragia = rep("round(sum(casos_mmg_hemorragia[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
-      prop_mmg_infeccao = rep("round(sum(casos_mmg_infeccoes[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
-      prop_mmg_uti = rep("round(sum(casos_mmg_uti[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
-      prop_mmg_tmp = rep("round(sum(casos_mmg_tmp[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
-      prop_mmg_transfusao = rep("round(sum(casos_mmg_transfusao[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2),
-      prop_mmg_cirurgia = rep("round(sum(casos_mmg_cirurgia[ano <= 2020]) / sum(casos_mmg[ano <= 2020]) * 100, 1)", 2)
+      sum_casos_mmg = rep("sum(casos_mmg[ano <= 2024])", 2),
+      prop_mmg_int_publicas = rep("round(sum(casos_mmg[ano <= 2024]) / sum(total_internacoes[ano <= 2024]) * 100, 1)", 2),
+      prop_mmg_hipertensao = rep("round(sum(casos_mmg_hipertensao[ano <= 2024]) / sum(casos_mmg[ano <= 2024]) * 100, 1)", 2),
+      prop_mmg_hemorragia = rep("round(sum(casos_mmg_hemorragia[ano <= 2024]) / sum(casos_mmg[ano <= 2024]) * 100, 1)", 2),
+      prop_mmg_infeccao = rep("round(sum(casos_mmg_infeccoes[ano <= 2024]) / sum(casos_mmg[ano <= 2024]) * 100, 1)", 2),
+      prop_mmg_uti = rep("round(sum(casos_mmg_uti[ano <= 2024]) / sum(casos_mmg[ano <= 2024]) * 100, 1)", 2),
+      prop_mmg_tmp = rep("round(sum(casos_mmg_tmp[ano <= 2024]) / sum(casos_mmg[ano <= 2024]) * 100, 1)", 2),
+      prop_mmg_transfusao = rep("round(sum(casos_mmg_transfusao[ano <= 2024]) / sum(casos_mmg[ano <= 2024]) * 100, 1)", 2),
+      prop_mmg_cirurgia = rep("round(sum(casos_mmg_cirurgia[ano <= 2024]) / sum(casos_mmg[ano <= 2024]) * 100, 1)", 2)
     )
 
 
@@ -961,7 +961,7 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
           rmm_corrigida |>
             dplyr::filter(
               localidade == filtros()$estado,
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2024
             ) |>
             dplyr::group_by(localidade) |>
             dplyr::summarise(
@@ -971,7 +971,7 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
           rmm_corrigida |>
             dplyr::filter(
               localidade == filtros()$regiao,
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2024
             ) |>
             dplyr::group_by(localidade) |>
             dplyr::summarise(
@@ -981,7 +981,7 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
           rmm_corrigida |>
             dplyr::filter(
               localidade == "Brasil",
-              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2021
+              ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2] & ano <= 2024
             ) |>
             dplyr::group_by(localidade) |>
             dplyr::summarise(

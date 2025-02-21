@@ -109,10 +109,10 @@ bloco5_aux <- read.csv("data-raw/csv/indicadores_bloco5_condicao_de_nascimento_2
 #   dplyr::arrange(codmunres, ano) |>
 #   dplyr::filter(codmunres %in% aux_municipios$codmunres)
 
-bloco6_mortalidade_aux <- read.csv("data-raw/csv/indicadores_bloco6_mortalidade_materna_2012-2022.csv") |>
+bloco6_mortalidade_aux <- read.csv("data-raw/csv/indicadores_bloco6_mortalidade_materna_2012-2024.csv") |>
   dplyr::select(!c(uf, municipio, regiao))
 
-bloco6_morbidade_aux <- read.csv("data-raw/csv/indicadores_bloco6_morbidade_materna_2012-2020.csv", sep = ";") |>
+bloco6_morbidade_aux <- indicadores_bloco6_morbidade_materna_2012_2024 <- read_csv("data-raw/csv/indicadores_bloco6_morbidade_materna_2012-2024.csv") |>
   janitor::clean_names()
 
 bloco6_aux <- dplyr::left_join(bloco6_mortalidade_aux, bloco6_morbidade_aux, by = c("ano", "codmunres"))
