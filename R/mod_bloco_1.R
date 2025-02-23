@@ -289,7 +289,8 @@ mod_bloco_1_server <- function(id, filtros, titulo_localidade_aux){
     bloco1_calcs <- data.frame(
       tipo = c("local", "referencia"),
       sum_total_de_nascidos_vivos = rep("sum(total_de_nascidos_vivos)", 2),
-      porc_dependentes_sus = rep("round((sum(populacao_feminina_10_a_49[ano <= 2021]) - sum(pop_fem_10_49_com_plano_saude[ano <= 2021]))/sum(populacao_feminina_10_a_49[ano <= 2021]) * 100, 1)", 2),
+      # porc_dependentes_sus = rep("round((sum(populacao_feminina_10_a_49[ano <= 2021]) - sum(pop_fem_10_49_com_plano_saude[ano <= 2021]))/sum(populacao_feminina_10_a_49[ano <= 2021]) * 100, 1)", 2),
+      porc_dependentes_sus = rep("round((sum(populacao_feminina_10_a_49) - sum(pop_fem_10_49_com_plano_saude))/sum(populacao_feminina_10_a_49) * 100, 1)", 2),
       porc_cobertura_esf = c("round(sum(media_cobertura_esf[ano <= 2020])/sum(populacao_total[ano <= 2020]) * 100, 1)", "95"),
       porc_nvm_menor_que_20_anos = rep("round(sum(nvm_menor_que_20_anos)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
       porc_nvm_entre_20_e_34_anos = rep("round(sum(nvm_entre_20_e_34_anos)/sum(total_de_nascidos_vivos) * 100, 1)", 2),
