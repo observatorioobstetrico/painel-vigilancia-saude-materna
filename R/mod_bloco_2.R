@@ -644,7 +644,7 @@ mod_bloco_2_server <- function(id, filtros, titulo_localidade_aux){
             highcharter::hcaes(x = ano, y = porc_menor20, group = class, colour = class)
           ) |>
           highcharter::hc_add_series(
-            data = data2_referencia() |> dplyr::filter(ano <= 2021),
+            data = data2_referencia(),
             type = "line",
             name = "Referência (países desenvolvidos)",
             highcharter::hcaes(x = ano, y = porc_menor20, group = class, colour = class),
@@ -678,7 +678,7 @@ mod_bloco_2_server <- function(id, filtros, titulo_localidade_aux){
         } else {
           grafico_base |>
             highcharter::hc_add_series(
-              data = data2_referencia() |> dplyr::filter(ano <= 2021),
+              data = data2_referencia(),
               type = "line",
               name = "Referência (países desenvolvidos)",
               highcharter::hcaes(x = ano, y = porc_menor20, group = class, colour = class),

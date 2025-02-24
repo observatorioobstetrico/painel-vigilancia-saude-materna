@@ -1273,6 +1273,8 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
     cols <- c("#2c115f", "#b73779", "#fc8961")
 
 
+    observe(print(data1()$porc_nvm_com_escolaridade_ate_3))
+
     ##### Criando os gráficos de barras para os indicadores de porcentagem de nascidos vivos #####
     output$plot1 <- highcharter::renderHighchart({
 
