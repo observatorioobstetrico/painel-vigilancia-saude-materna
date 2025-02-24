@@ -1164,50 +1164,46 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
       }
     })
 
-
-    data_fator_de_correcao <- reactive({
+    data_rmm_corrigida_aux <- reactive({
       if (infos_indicador()$nome_abreviado == "rmm") {
-        if (filtros()$nivel %in% c("Estadual", "Regional", "Nacional")) {
-          if (filtros()$nivel == "Estadual") {
-            rmm_fator_de_correcao |>
+        if(filtros()$nivel %in% c("Estadual", "Regional", "Nacional")){
+          if(filtros()$nivel == "Estadual"){
+            rmm_corrigida |>
               dplyr::filter(
                 localidade == filtros()$estado,
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
               )
-          } else if (filtros()$nivel == "Regional") {
-            rmm_fator_de_correcao |>
+          } else if(filtros()$nivel == "Regional"){
+            rmm_corrigida |>
               dplyr::filter(
                 localidade == filtros()$regiao,
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
               )
-          } else {
-            rmm_fator_de_correcao |>
+          } else if(filtros()$nivel=="Nacional"){
+            rmm_corrigida |>
               dplyr::filter(
                 localidade == "Brasil",
                 ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
               )
           }
-        } else {
-          data.frame(
-            ano = anos_disponiveis(),
-            fator_de_correcao = rep(1, length(anos_disponiveis()))
-          )
         }
-      }
-    })
-
-    data_rmm_corrigida_aux <- reactive({
-      if (infos_indicador()$nome_abreviado == "rmm") {
-        dplyr::full_join(data_grafico_serie(), data_fator_de_correcao(), by = "ano")
+        else{
+          data.frame(ano = filtros()$ano2[1]:filtros()$ano2[2])
+        }
       }
     })
 
     data_rmm_corrigida <- reactive({
       if (infos_indicador()$nome_abreviado == "rmm") {
-        data_rmm_corrigida_aux() |>
-          dplyr::mutate(
-            rmm = round(indicador * fator_de_correcao, 1)
-          )
+        if (filtros()$nivel %in% c("Estadual", "Regional", "Nacional")) {
+          dplyr::full_join(data_grafico_serie(), data_rmm_corrigida_aux(), by = "ano") |>
+            dplyr::mutate(
+              rmm = ifelse(ano <= 2022, RMM, indicador)
+            )
+        } else {
+          data_grafico_serie() |>
+            dplyr::rename(rmm = indicador)
+        }
       }
     })
 

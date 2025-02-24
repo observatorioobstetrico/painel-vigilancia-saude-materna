@@ -852,22 +852,21 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
     })
 
     ########## Calculando as RMM com correção
-
-    data6_correcao_rmm <- reactive({
-      if(filtros()$nivel %in% c("Estadual", "Regional", "Nacional")){
-        if(filtros()$nivel == "Estadual"){
+    data6_rmm_corrigida_aux <- reactive({
+      if (filtros()$nivel %in% c("Estadual", "Regional", "Nacional")) {
+        if (filtros()$nivel == "Estadual") {
           rmm_corrigida |>
             dplyr::filter(
               localidade == filtros()$estado,
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
             )
-        } else if(filtros()$nivel == "Regional"){
+        } else if (filtros()$nivel == "Regional") {
           rmm_corrigida |>
             dplyr::filter(
               localidade == filtros()$regiao,
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
             )
-        } else if(filtros()$nivel=="Nacional"){
+        } else if (filtros()$nivel == "Nacional") {
           rmm_corrigida |>
             dplyr::filter(
               localidade == "Brasil",
@@ -881,34 +880,30 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
     })
 
     data6_rmm_corrigida <- reactive({
-      if(filtros()$nivel %in% c("Estadual", "Regional", "Nacional")){
-        dplyr::full_join(data6(), data6_correcao_rmm(), by= "ano") |>
-          dplyr::mutate(
-            rmm_c=RMM
-          )
-      } else{
-        dplyr::full_join(data6(), data6_correcao_rmm(), by= "ano") |>
-          dplyr::mutate(
-            rmm_c=rmm
-          )
+      if (filtros()$nivel %in% c("Estadual", "Regional", "Nacional")) {
+        dplyr::full_join(data6(), data6_rmm_corrigida_aux(), by = "ano") |>
+          dplyr::mutate(rmm_c = ifelse(ano <= 2022, RMM, rmm))
+      } else {
+        data6() |>
+          dplyr::rename(rmm_c = rmm)
       }
     })
 
-    data6_comp_correcao_rmm <- reactive({
-      if(filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")){
-        if(filtros()$nivel2 == "Estadual"){
+    data6_comp_rmm_corrigida_aux <- reactive({
+      if (filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")) {
+        if (filtros()$nivel2 == "Estadual") {
           rmm_corrigida |>
             dplyr::filter(
               localidade == filtros()$estado2,
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
             )
-        } else if(filtros()$nivel2 == "Regional"){
+        } else if (filtros()$nivel2 == "Regional") {
           rmm_corrigida |>
             dplyr::filter(
               localidade == filtros()$regiao2,
               ano >= filtros()$ano2[1] & ano <= filtros()$ano2[2]
             )
-        } else if(filtros()$nivel2=="Nacional"){
+        } else if (filtros()$nivel2=="Nacional") {
           rmm_corrigida |>
             dplyr::filter(
               localidade == "Brasil",
@@ -922,16 +917,11 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
     })
 
     data6_comp_rmm_corrigida <- reactive({
-      if(filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")){
-        dplyr::full_join(data6_comp(), data6_comp_correcao_rmm(), by= "ano") |>
-          dplyr::mutate(
-            rmm_c=RMM
-          )
+      if (filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")) {
+        dplyr::full_join(data6_comp(), data6_comp_rmm_corrigida_aux(), by = "ano") |>
+          dplyr::mutate(rmm = ifelse(ano <= 2022, RMM, rmm))
       } else{
-        dplyr::full_join(data6_comp(), data6_comp_correcao_rmm(), by= "ano") |>
-          dplyr::mutate(
-            rmm_c=rmm
-          )
+        data6_comp
       }
     })
 
