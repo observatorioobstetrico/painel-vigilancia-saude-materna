@@ -2,9 +2,10 @@ library("microdatasus")
 library("dplyr")
 library("janitor")
 library("readr")
+library("data.table")
 
 df <- fetch_datasus(
-  year_start = 2012,
+  year_start = 2021,
   year_end = 2023,
   vars = c("CODMUNRES",
            "DTNASC",
@@ -14,7 +15,16 @@ df <- fetch_datasus(
   information_system = "SINASC"
 )
 
-df_proces <- process_sinasc(df, municipality_data = T)
+df_sinasc_preliminares24 <- fread("https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SINASC/DNOPEN24.csv", sep = ";") |>
+  select(CODMUNRES, DTNASC, PESO, GESTACAO, SEMAGESTAC)
+
+df <- df %>%
+  mutate_if(is.character, as.numeric)
+
+## Juntando os dados consolidados com os dados preliminares
+df_sinasc <- full_join(df, df_sinasc_preliminares24)
+
+df_proces <- process_sinasc(df_sinasc, municipality_data = T)
 
 #write.csv(df_proces, "Bloco_5/Databases/dados_sinasc_bloco5.csv")
 
@@ -97,7 +107,7 @@ codigos_municipios <- read.csv("data-raw/extracao-dos-dados/databases-antigas/ta
   pull(codmunres)
 
 #Criando um data.frame auxiliar que possui uma linha para cada combinação de município e ano
-df_aux_municipios <- data.frame(codmunres = rep(codigos_municipios, each = length(2012:2023)), ano = 2012:2023)
+df_aux_municipios <- data.frame(codmunres = rep(codigos_municipios, each = length(2021:2023)), ano = 2021:2023)
 
 df2 <- df2 |> mutate_if(is.character, as.numeric)
 
@@ -106,4 +116,9 @@ df_bloco5 <- left_join(df_aux_municipios, df2, by = c("codmunres", "ano"))
 
 df_bloco5[is.na(df_bloco5)] <- 0
 
-write.csv(df_bloco5, "data-raw/csv/indicadores_bloco5_condicao_de_nascimento_2012_2023.csv", row.names = FALSE)
+df_bloco5_antigo <- read_csv('data-raw/csv/indicadores_bloco5_condicao_de_nascimento_2012_2022.csv')|>
+  filter(ano <= 2020)
+
+df_bloco5_novo <- rbind(df_bloco5_antigo, df_bloco5)
+
+write.csv(df_bloco5_novo, "data-raw/csv/indicadores_bloco5_condicao_de_nascimento_2012_2023.csv", row.names = FALSE)
