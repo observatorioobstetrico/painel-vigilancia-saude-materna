@@ -387,8 +387,8 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
       tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco6_morbidade"]
     )
 
-    indicadores_2022 <- reactive({
-      indicadores_2022_aux <-
+    indicadores_2023 <- reactive({
+      indicadores_2023_aux <-
         if (filtros()$nivel %in% c("Nacional", "Estadual", "Regional")) {
           c(
             "porc_dependentes_sus",
@@ -422,8 +422,8 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
 
       if (infos_indicador()$nome_abreviado %in% indicadores_2020) {
         anos_disponiveis_aux[anos_disponiveis_aux <= 2020]
-      } else if (infos_indicador()$nome_abreviado %in% indicadores_2022()) {
-        anos_disponiveis_aux[anos_disponiveis_aux <= 2022]
+      } else if (infos_indicador()$nome_abreviado %in% indicadores_2023()) {
+        anos_disponiveis_aux[anos_disponiveis_aux <= 2023]
       } else {
         anos_disponiveis_aux
       }
@@ -522,7 +522,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
           highcharter::hcaes(x = ano, y = cobertura, group = localidade, colour = localidade)
         ) |>
         highcharter::hc_add_series(
-          data = data_referencia_cobertura() |> dplyr::filter(ano <= 2022),
+          data = data_referencia_cobertura() |> dplyr::filter(ano <= 2023),
           type = "line",
           highcharter::hcaes(x = ano, y = referencia, group = localidade, colour = localidade),
           dashStyle = "ShortDot",
@@ -1122,18 +1122,18 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
           tx_abortos_cem_nascidos_vivos_lim_inf = ifelse(
             grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado),
             dplyr::case_when(
-              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
-              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) / sum(total_de_nascidos_vivos_sus) * 100, 1),
-              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_ans) * 100, 1)
+              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos_10_a_49) * 100, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) / sum(total_de_nascidos_vivos_10_a_49_sus) * 100, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_10_a_49_ans) * 100, 1)
             ),
             NA
           ),
           tx_abortos_cem_nascidos_vivos_lim_sup = ifelse(
             grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado),
             dplyr::case_when(
-              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1),
-              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_sus) * 100, 1),
-              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7) / sum(total_de_nascidos_vivos_ans) * 100, 1)
+              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos_10_a_49) * 100, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_10_a_49_sus) * 100, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7) / sum(total_de_nascidos_vivos_10_a_49_ans) * 100, 1)
             ),
             NA
           ),
@@ -1156,9 +1156,9 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
         data_grafico_serie_aux |>
           tibble::add_row(ano = 2021, class = data_grafico_serie_aux$class[1]) |>
           tibble::add_row(ano = 2022, class = data_grafico_serie_aux$class[1])
-      } else if (infos_indicador()$nome_abreviado %in% indicadores_2022()) {
+      } else if (infos_indicador()$nome_abreviado %in% indicadores_2023()) {
         data_grafico_serie_aux |>
-          tibble::add_row(ano = 2022, class = data_grafico_serie_aux$class[1])
+          tibble::add_row(ano = 2023, class = data_grafico_serie_aux$class[1])
       } else {
         data_grafico_serie_aux
       }
@@ -1198,7 +1198,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
         if (filtros()$nivel %in% c("Estadual", "Regional", "Nacional")) {
           dplyr::full_join(data_grafico_serie(), data_rmm_corrigida_aux(), by = "ano") |>
             dplyr::mutate(
-              rmm = ifelse(ano <= 2022, RMM, indicador)
+              rmm = ifelse(ano <= 2023, RMM, indicador) # mod
             )
         } else {
           data_grafico_serie() |>
@@ -1244,18 +1244,18 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
           tx_abortos_cem_nascidos_vivos_lim_inf = ifelse(
             grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado),
             dplyr::case_when(
-              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos) * 100, 1),
-              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) / sum(total_de_nascidos_vivos_sus) * 100, 1),
-              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_ans) * 100, 1)
+              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5)) / sum(total_de_nascidos_vivos_10_a_49) * 100, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 3) / sum(total_de_nascidos_vivos_10_a_49_sus) * 100, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_10_a_49_ans) * 100, 1)
             ),
             NA
           ),
           tx_abortos_cem_nascidos_vivos_lim_sup = ifelse(
             grepl("tx_abortos_cem_nascidos_vivos_valor_medio", infos_indicador()$nome_abreviado),
             dplyr::case_when(
-              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos) * 100, 1),
-              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_sus) * 100, 1),
-              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7) / sum(total_de_nascidos_vivos_ans) * 100, 1)
+              infos_indicador()$nome_abreviado == "tx_abortos_cem_nascidos_vivos_valor_medio" ~ round(((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) + (((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7)) / sum(total_de_nascidos_vivos_10_a_49) * 100, 1),
+              infos_indicador()$nome_abreviado == "sus_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_sus_menor_30) * 0.9) + (sum(abortos_sus_30_a_39) * 0.85) + (sum(abortos_sus_40_a_49) * 0.75)) * 5) / sum(total_de_nascidos_vivos_10_a_49_sus) * 100, 1),
+              infos_indicador()$nome_abreviado == "ans_tx_abortos_cem_nascidos_vivos_valor_medio" ~ round((((sum(abortos_ans_menor_30) * 0.9) + (sum(abortos_ans_30_a_39) * 0.85) + (sum(abortos_ans_40_a_49) * 0.75)) * 7) / sum(total_de_nascidos_vivos_10_a_49_ans) * 100, 1)
             ),
             NA
           ),
@@ -1282,7 +1282,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
         ) |>
         dplyr::summarise(
           total_de_nascidos_vivos = sum(nascidos, na.rm = TRUE),
-          porc_baixo_peso = round(sum(nasc_baixo_peso, na.rm = TRUE)/total_de_nascidos_vivos * 100 * 0.7, 1),
+          porc_baixo_peso = round(sum(nasc_baixo_peso, na.rm = TRUE)/total_de_nascidos_vivos_10_a_49 * 100 * 0.7, 1),
           class = "Referência"
         ) |>
         dplyr::ungroup()
@@ -1423,9 +1423,9 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
               data = data_referencia_serie() |>
                 dplyr::filter(
                   ano <= ifelse(
-                    infos_indicador()$nome_abreviado %in% indicadores_2022(),
+                    infos_indicador()$nome_abreviado %in% indicadores_2023(),
                     2021,
-                    ifelse(infos_indicador()$nome_abreviado %in% indicadores_2020, 2020, 2022)
+                    ifelse(infos_indicador()$nome_abreviado %in% indicadores_2020, 2020, 2023) # mod
                   )
                 ),
               type = "line",
