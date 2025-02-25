@@ -369,46 +369,17 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
 
     ## Criando vetores que recebem os indicadores que só estão disponíveis a partir de ou até certos anos --------
     indicadores_2014 <- c(
-      "tx_abortos_mil_mulheres_valor_medio",
-      "sus_tx_abortos_mil_mulheres_valor_medio",
-      "ans_tx_abortos_mil_mulheres_valor_medio",
-      "tx_abortos_cem_nascidos_vivos_valor_medio",
-      "sus_tx_abortos_cem_nascidos_vivos_valor_medio",
-      "ans_tx_abortos_cem_nascidos_vivos_valor_medio",
       "cobertura_pre_natal",
       "porc_7",
+      "porc_consultas_adequadas",
       tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco4"][-1]
     )
 
     indicadores_2015 <- tabela_indicadores$nome_abreviado[grep("abortos", tabela_indicadores$nome_abreviado)]
 
     indicadores_2020 <- c(
-      "porc_cobertura_esf",
-      tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco6_morbidade"]
+      "porc_cobertura_esf"
     )
-
-    indicadores_2023 <- reactive({
-      indicadores_2023_aux <-
-        if (filtros()$nivel %in% c("Nacional", "Estadual", "Regional")) {
-          c(
-            "porc_dependentes_sus",
-            "porc_menor20",
-            tabela_indicadores$nome_abreviado[grep("tx_abortos_mil", tabela_indicadores$nome_abreviado)],
-            "sus_tx_abortos_cem_nascidos_vivos_valor_medio",
-            "ans_tx_abortos_cem_nascidos_vivos_valor_medio",
-            tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco4_deslocamento"]
-          )
-        } else {
-          c(
-            "porc_dependentes_sus",
-            "porc_menor20",
-            tabela_indicadores$nome_abreviado[grep("tx_abortos_mil", tabela_indicadores$nome_abreviado)],
-            "sus_tx_abortos_cem_nascidos_vivos_valor_medio",
-            "ans_tx_abortos_cem_nascidos_vivos_valor_medio",
-            tabela_indicadores$nome_abreviado[tabela_indicadores$bloco == "bloco4_deslocamento"]
-          )
-        }
-    })
 
     ## Criando um vetor com a lista de anos disponíveis para o indicador selecionado --------
     anos_disponiveis <- reactive({
@@ -422,8 +393,6 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
 
       if (infos_indicador()$nome_abreviado %in% indicadores_2020) {
         anos_disponiveis_aux[anos_disponiveis_aux <= 2020]
-      } else if (infos_indicador()$nome_abreviado %in% indicadores_2023()) {
-        anos_disponiveis_aux[anos_disponiveis_aux <= 2023]
       } else {
         anos_disponiveis_aux
       }
@@ -1156,9 +1125,6 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
         data_grafico_serie_aux |>
           tibble::add_row(ano = 2021, class = data_grafico_serie_aux$class[1]) |>
           tibble::add_row(ano = 2022, class = data_grafico_serie_aux$class[1])
-      } else if (infos_indicador()$nome_abreviado %in% indicadores_2023()) {
-        data_grafico_serie_aux |>
-          tibble::add_row(ano = 2023, class = data_grafico_serie_aux$class[1])
       } else {
         data_grafico_serie_aux
       }
@@ -1422,11 +1388,7 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
             highcharter::hc_add_series(
               data = data_referencia_serie() |>
                 dplyr::filter(
-                  ano <= ifelse(
-                    infos_indicador()$nome_abreviado %in% indicadores_2023(),
-                    2021,
-                    ifelse(infos_indicador()$nome_abreviado %in% indicadores_2020, 2020, 2023) # mod
-                  )
+                  ano <= ifelse(infos_indicador()$nome_abreviado %in% indicadores_2020, 2020, 2023)
                 ),
               type = "line",
               highcharter::hcaes(x = ano, y = indicador, group = class, colour = class),
