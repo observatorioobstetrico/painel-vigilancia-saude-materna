@@ -2095,7 +2095,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson_faltante:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson_faltante:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2105,7 +2105,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson1:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson1:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2115,7 +2115,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson2:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson2:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2125,7 +2125,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson3:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson3:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2135,7 +2135,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson4:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson4:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2145,7 +2145,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson5:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson5:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2155,7 +2155,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson6_a_9:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson6_a_9:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2165,7 +2165,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson10:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_nasc_robson10:,f}% </b>"
           )
         ) |>
         highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
@@ -2187,7 +2187,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson_faltante_tx_cesariana:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson_faltante_tx_cesariana:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2197,7 +2197,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson1_tx_cesariana:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson1_tx_cesariana:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2207,7 +2207,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson2_tx_cesariana:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson2_tx_cesariana:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2217,7 +2217,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson3_tx_cesariana:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson3_tx_cesariana:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2227,7 +2227,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson4_tx_cesariana:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson4_tx_cesariana:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2237,7 +2237,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson5_tx_cesariana:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson5_tx_cesariana:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2247,7 +2247,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson6_a_9_tx_cesariana:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson6_a_9_tx_cesariana:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2257,7 +2257,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           showInLegend = TRUE,
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson10_tx_cesariana:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_contrib_robson10_tx_cesariana:,f}% </b>"
           )
         ) |>
         highcharter::hc_plotOptions(column = list(stacking = "percent")) |>
@@ -2277,7 +2277,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           highcharter::hcaes(x = ano, y = prop_partos_municipio_res),
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_municipio_res:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_municipio_res:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2286,7 +2286,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           highcharter::hcaes(x = ano, y = prop_partos_rsaude_res),
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_rsaude_res:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_rsaude_res:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2295,7 +2295,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           highcharter::hcaes(x = ano, y = prop_partos_macro_rsaude_res),
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_macro_rsaude_res:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_macro_rsaude_res:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2304,7 +2304,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           highcharter::hcaes(x = ano, y = prop_partos_fora_macro_rsaude_res),
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_fora_macro_rsaude_res:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_fora_macro_rsaude_res:,f}% </b>"
           )
         ) |>
         highcharter::hc_add_series(
@@ -2313,7 +2313,7 @@ mod_bloco_4_server <- function(id, filtros, titulo_localidade_aux){
           type = "column",
           highcharter::hcaes(x = ano, y = prop_partos_fora_uf_res),
           tooltip = list(
-            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name}: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_fora_uf_res:,f}% </b>"
+            pointFormat = "<span style = 'color: {series.color}'> &#9679 </span> {series.name} <b>({point.localidade})</b>: <b> {point.y}% </b> <br> {point.localidade_comparacao}: <b> {point.br_prop_partos_fora_uf_res:,f}% </b>"
           )
         ) |>
         highcharter::hc_plotOptions(column = list(stacking = "percent")) |>

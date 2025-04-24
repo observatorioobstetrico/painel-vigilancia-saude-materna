@@ -48,7 +48,7 @@ mod_nivel_3_ui <- function(id){
                   status = "primary",
                   collapsible = FALSE,
                   headerBorder = FALSE,
-                  style = "height: 380px; padding-top: 0; padding-bottom: 0; overflow-y: auto",
+                  style = "height: 480px; padding-top: 0; padding-bottom: 0; overflow-y: auto",
                   div(
                     style = "height: 15%; display: flex; align-items: center;",
                     HTML("<b style='font-size:19px'> Resumo da qualidade da informação &nbsp;</b>"),
@@ -81,7 +81,7 @@ mod_nivel_3_ui <- function(id){
                   shinycssloaders::withSpinner(uiOutput(ns("gauge1")), proxy.height = "250px")
                 )
               ),
-              tags$style(HTML(".html-widget.gauge svg {height: 260px;}"))
+              tags$style(HTML(".html-widget.gauge svg {height: 230px;}"))
             ),
             fluidRow(
               column(
@@ -239,32 +239,37 @@ mod_nivel_3_ui <- function(id){
                 headerBorder = FALSE,
                 #id = "tabela",
                 #uiOutput(ns("css_tabela")),
-                style = "height: 923px; padding-top: 0; padding-bottom: 0; overflow-y: auto",
+                style = "height: 1023px; padding-top: 0; padding-bottom: 0; overflow-y: auto",
                 div(
-                  style = "height: 140px",
-                  br(),
-                  HTML(
-                    "<b style='font-size:19px'> Distribuição do indicador por UF, macrorregião de saúde e município ao longo do período &nbsp;</b>"
-                  ),
-                  br(),
                   br(),
                   fluidRow(
                     column(
                       width = 12,
-                      tags$style(HTML(".radio-inline, .checkbox-inline {overflow-x: auto}")),
-                      radioButtons(
-                        inputId = ns("opcoes_tab1"),
-                        label = NULL,
-                        choiceNames = list(
-                          HTML("<span> Mostrar informações referentes a todo o país </span>"),
-                          HTML("<span> Mostrar informações referentes apenas à localidade escolhida </span>")
-                        ),
-                        choiceValues = list("escolha1", "escolha2"),
-                        selected = "escolha2",
-                        inline = TRUE
-                      ),
-                      align = "center"
+                      HTML(
+                        "<b style='font-size:19px'> Distribuição do indicador por UF, macrorregião de saúde e município em todo o período &nbsp;</b>"
+                      )
                     )
+                  ),
+                  br()
+                ),
+                fluidRow(
+                  column(
+                    width = 12,
+                    hr(),
+                    br(),
+                    tags$style(HTML(".radio-inline, .checkbox-inline {overflow-x: auto; align-items: center;}")),
+                    radioButtons(
+                      inputId = ns("opcoes_tab1"),
+                      label = NULL,
+                      choiceNames = list(
+                        HTML("<span> Mostrar informações referentes a todo o país </span>"),
+                        HTML("<span> Mostrar informações referentes apenas à localidade escolhida </span>")
+                      ),
+                      choiceValues = list("escolha1", "escolha2"),
+                      selected = "escolha2",
+                      inline = TRUE
+                    ),
+                    align = "center"
                   )
                 ),
                 hr(),
@@ -759,6 +764,8 @@ mod_nivel_3_server <- function(id, filtros, titulo_localidade_aux){
               )
             )
           }),
+          br(),
+          br(),
           HTML("dos anos considerados apresentam problemas de qualidade em alguma das variáveis necessárias para a construção do indicador")
         )
       }

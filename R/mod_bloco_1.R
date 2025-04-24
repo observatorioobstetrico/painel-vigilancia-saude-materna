@@ -1250,6 +1250,7 @@ mod_bloco_1_server <- function(id, filtros, titulo_localidade_aux){
         highcharter::highchart() |>
           highcharter::hc_add_series(
             data = data1(),
+            name = dplyr::if_else(filtros()$nivel == "Nacional", "Brasil", unique(data1()$class)),
             type = "line",
             highcharter::hcaes(x = ano, y = porc_cobertura_esf, group = class, colour = class)
           ) |>

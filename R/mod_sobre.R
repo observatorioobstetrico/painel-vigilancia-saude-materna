@@ -60,7 +60,7 @@ mod_sobre_ui <- function(id){
           </p>
 
           <ol start='4', align='justify'; style='font-size:18px; font-weight: bold;'>
-            <li> Documentação dos indicadores: <span style = 'font-weight: normal;'> nesse munu, disponibilizamos um documento para impressão, contendo a documentação completa de todos os indicadores do painel;</span></li>
+            <li> Documentação dos indicadores: <span style = 'font-weight: normal;'> nesse menu, disponibilizamos um documento para impressão, contendo a documentação completa de todos os indicadores do painel;</span></li>
             <li> A história da Aparecida: <span style = 'font-weight: normal;'>nesse menu, disponibilizamos um link para a \"História de Aparecida\", onde mostramos os indicadores apresentados neste painel em diferentes contextos e em como eles refletem as situações de vulnerabilidade da mulher ao óbito materno, permitindo maior conhecimento sobre a morte materna e seus determinantes.</span></li>
           </ol>
 

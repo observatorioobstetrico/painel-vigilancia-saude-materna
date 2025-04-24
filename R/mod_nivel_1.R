@@ -1273,8 +1273,6 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
     cols <- c("#2c115f", "#b73779", "#fc8961")
 
 
-    observe(print(data1()$porc_nvm_com_escolaridade_ate_3))
-
     ##### Criando os gráficos de barras para os indicadores de porcentagem de nascidos vivos #####
     output$plot1 <- highcharter::renderHighchart({
 
@@ -2323,9 +2321,7 @@ mod_nivel_1_server <- function(id, filtros, titulo_localidade_aux){
     data6_rmm_corrigida <- reactive({
       if(filtros()$nivel %in% c("Nacional", "Regional", "Estadual")){
         data6_rmm_corrigida_aux() |>
-          dplyr::mutate(
-            rmm_c = RMM
-          )
+          dplyr::mutate(rmm_c = ifelse(ano <= 2022, RMM, rmm))
       } else {
         data6_rmm_corrigida_aux() |>
           dplyr::mutate(

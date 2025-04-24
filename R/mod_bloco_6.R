@@ -919,7 +919,7 @@ mod_bloco_6_server <- function(id, filtros, titulo_localidade_aux){
     data6_comp_rmm_corrigida <- reactive({
       if (filtros()$nivel2 %in% c("Estadual", "Regional", "Nacional")) {
         dplyr::full_join(data6_comp(), data6_comp_rmm_corrigida_aux(), by = "ano") |>
-          dplyr::mutate(rmm = ifelse(ano <= 2022, RMM, rmm))
+          dplyr::mutate(rmm_c = ifelse(ano <= 2022, RMM, rmm))
       } else{
         data6_comp
       }
